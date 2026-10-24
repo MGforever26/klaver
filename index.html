@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#7a2cff">
-<title>Klaver: skalaer og akkorder</title>
+<title>Klaver: skalaer, akkorder og nodelæsning</title>
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -16,8 +16,9 @@
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0 auto;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;padding:16px;max-width:520px}
 button,select{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px}
-.tabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-bottom:12px}
-.tabs button{grid-column:span 2;min-width:0;padding:10px 3px;font-size:14px}.tabs button:nth-child(n+4){grid-column:span 3}
+.tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:12px}
+.tabs button{min-width:0;padding:10px 3px;font-size:13px;white-space:nowrap}
+@media(max-width:380px){.tabs button{font-size:12px;padding:10px 1px}}
 .tabs button.on,.keys button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .row{display:flex;gap:8px;margin-bottom:12px}.row>div{flex:1}
 label{display:block;font-size:13px;color:var(--ink2);margin-bottom:4px}
@@ -85,10 +86,42 @@ select{width:100%;font-size:16px;padding:10px}
 .voice-notes{white-space:nowrap;color:var(--ink)}
 .voice-divider{height:16px;border-left:1px solid var(--line);margin:0 2px;flex:none}
 @media (max-width:390px){.chord-step{grid-template-columns:minmax(64px,auto) minmax(0,1fr);gap:5px}.step-title{font-size:14px}.voice-line{font-size:12px;gap:3px}.circle-key{min-width:35px;height:32px;font-size:13px}.circle-key.minor{min-width:33px;height:27px;font-size:11px}}
+
+/* Nodelæsning: korte, visuelle opslag */
+.read-lead{font-size:13px;color:var(--ink2);line-height:1.5;margin-top:7px}
+.read-head{font-size:17px;font-weight:650;margin:0 0 12px}
+.read-tip{color:var(--ink2);font-size:12px;line-height:1.5;margin-top:9px}
+.read-meters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.read-meter{background:var(--bg);border:1px solid var(--hair);border-radius:10px;padding:10px;min-width:0}
+.read-meter-title{display:flex;justify-content:space-between;align-items:baseline;gap:3px}
+.read-meter-title b{font-size:22px;font-weight:550}
+.read-meter-title span{font-size:12px;color:var(--ink2);white-space:nowrap}
+.read-meter-bars{display:flex;gap:3px;margin:10px 0 7px;height:15px}
+.read-meter-bars span{flex:1;background:var(--ink);opacity:.78;border-radius:3px}
+.read-meter-bars span:nth-child(even){opacity:.38}
+.read-meter-desc{font-size:11px;color:var(--ink2);line-height:1.35}
+.read-values{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px}
+.read-value{text-align:center;min-width:0}
+.read-value svg{width:100%;max-width:60px;height:61px;display:block;margin:0 auto}
+.read-value strong{display:block;font-size:11px;font-weight:600;line-height:1.15;min-height:26px}
+.read-value span{font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.read-dots{display:grid;gap:4px}
+.read-dotrow{display:grid;grid-template-columns:62px minmax(0,1fr) auto;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid var(--hair)}
+.read-dotrow:last-child{border:0}
+.read-dotrow svg{width:58px;height:52px}
+.read-dotrow span{font-size:12px;color:var(--ink2)}
+.read-dotrow b{font-size:13px;white-space:nowrap;font-weight:600;font-variant-numeric:tabular-nums}
+.read-signs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.read-sign{min-width:0;text-align:center;background:var(--bg);border-radius:9px;padding:8px 3px}
+.read-sign svg{width:100%;height:58px;display:block;max-width:120px;margin:auto}
+.read-sign strong{display:block;font-size:12px;margin:3px 0}
+.read-sign span{display:block;font-size:11px;line-height:1.35;color:var(--ink2)}
+.read-voices{width:100%;height:auto;max-height:145px;display:block}
+.read-key{font-size:13px;font-weight:550;margin-top:10px}
 </style>
 </head>
 <body>
-<div class="tabs"><button>Skalaer</button><button>7-akkorder</button><button>Opslag</button><button>Progressioner</button><button>Modulationer</button></div>
+<div class="tabs"><button>Skalaer</button><button>7-akkorder</button><button>Opslag</button><button>Progressioner</button><button>Modulationer</button><button>Læs noder</button></div>
 <div class="row" id="ctl">
 <div><label for="root">Tone</label><select id="root"></select></div>
 <div id="ct"><label for="type">Akkordtype</label><select id="type"></select></div>
@@ -177,6 +210,69 @@ function drawP(){var labels=['Kromatiske','Glide','11’er-arpeggio','Jazz i Es'
  return '<div class="card"><div class="big">Progressioner</div><div class="sub">Tre forløb fra jazznotatet og akkordfølgen på dit billede.</div><div class="prog-tabs" style="grid-template-columns:repeat(2,minmax(0,1fr))">'+labels.map(function(label,i){return '<button'+(i===pr?' class="on"':'')+' onclick="pr='+i+';upd()">'+label+'</button>'}).join('')+'</div><div class="sub" style="font-weight:600">'+p.name+'</div><div class="sub">'+p.subtitle+'</div>'+select+rows.map(chordCard).join('')+'<div class="note">'+p.note+'</div></div>'}
 function drawM(){var row=MODS[mo],starts=MODS.map(function(x){return x[0][0].replace(/m9$/,'')});return '<div class="card"><div class="big">Modulationer</div><div class="sub">12 trin: mol9 → maj7 (en halv tone op) → mol9 (en stor terts videre). Sidste akkord er første akkord i næste trin.</div><div class="step-nav">'+starts.map(function(label,i){return '<button'+(i===mo?' class="on"':'')+' onclick="mo='+i+';upd()">'+label+'</button>'}).join('')+'</div><div class="sub" style="margin:12px 0 6px">Trin '+(mo+1)+' af 12</div>'+row.map(chordCard).join('')+'<div class="step-arrows"><button onclick="mo=(mo+11)%12;upd()">← Forrige</button><span class="step-num">'+(mo+1)+' / 12</span><button onclick="mo=(mo+1)%12;upd()">Næste →</button></div><div class="note">Når du når sidste trin, vender du tilbage til Cm9. Flyt gerne akkorderne en oktav ned, hvis de bliver for høje.</div></div>'}
 
+
+/* Nodefigurer tegnes i SVG, så symbolerne ikke afhænger af musikskrifttyper. */
+function readNoteSVG(kind,dotted){
+ var solid=(kind==='quarter'||kind==='eighth'||kind==='sixteenth'), stem=kind!=='whole';
+ var head='<ellipse cx="23" cy="39" rx="10" ry="6.5" transform="rotate(-20 23 39)" '+(solid?'fill="currentColor"':'fill="none"')+' stroke="currentColor" stroke-width="2"/>';
+ var line=stem?'<path d="M32 37 V7" fill="none" stroke="currentColor" stroke-width="2"/>':'';
+ var flags=kind==='eighth'||kind==='sixteenth'?'<path d="M32 8 Q54 16 43 33" fill="none" stroke="currentColor" stroke-width="2.5"/>':'';
+ if(kind==='sixteenth')flags+='<path d="M32 17 Q53 26 43 42" fill="none" stroke="currentColor" stroke-width="2.5"/>';
+ return '<svg viewBox="0 0 64 62" aria-hidden="true">'+head+line+flags+(dotted?'<circle cx="54" cy="39" r="2.8" fill="currentColor"/>':'')+'</svg>';
+}
+function readBeamSVG(two){
+ var b='<svg viewBox="0 0 120 63" aria-hidden="true"><g fill="currentColor" stroke="currentColor" stroke-width="2">'+
+ '<ellipse cx="27" cy="45" rx="9" ry="6" transform="rotate(-20 27 45)"/>'+
+ '<ellipse cx="88" cy="45" rx="9" ry="6" transform="rotate(-20 88 45)"/>'+
+ '<path d="M35 43 V10 M96 43 V10" fill="none"/>'+
+ '<path d="M35 10 H96 V17 H35 Z" stroke="none"/>';
+ if(two)b+='<path d="M35 22 H96 V29 H35 Z" stroke="none"/>';
+ return b+'</g></svg>';
+}
+function readTieSVG(){
+ return '<svg viewBox="0 0 120 63" aria-hidden="true">'+
+ '<g fill="currentColor" stroke="currentColor" stroke-width="2">'+
+ '<ellipse cx="28" cy="34" rx="9" ry="6" transform="rotate(-20 28 34)"/>'+
+ '<ellipse cx="90" cy="34" rx="9" ry="6" transform="rotate(-20 90 34)"/>'+
+ '<path d="M36 32 V5 M98 32 V5" fill="none"/></g>'+
+ '<path d="M24 45 Q59 70 94 45" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+}
+function readVoicesSVG(){
+ var xs=[38,85,132,190,237,284],ys=[45,56,45,45,56,45],s='<svg class="read-voices" viewBox="0 0 325 135" role="img" aria-label="Seks ottendedele med stilke opad og to bjælkegrupper spilles, mens en punkteret halvnode med stilk nedad holdes hele takten.">';
+ for(var j=0;j<5;j++)s+='<path d="M10 '+(36+j*12)+' H314" stroke="var(--line)" stroke-width="1"/>';
+ s+='<g fill="currentColor" stroke="currentColor" stroke-width="1.9">';
+ for(var i=0;i<6;i++){s+='<ellipse cx="'+xs[i]+'" cy="'+ys[i]+'" rx="8.4" ry="5.5" transform="rotate(-20 '+xs[i]+' '+ys[i]+')"/>';
+ s+='<path d="M'+(xs[i]+7)+' '+(ys[i]-2)+' V12" fill="none"/>';}
+ s+='<path d="M45 12 H139 V19 H45 Z M197 12 H291 V19 H197 Z" stroke="none"/>';
+ s+='<ellipse cx="38" cy="84" rx="10" ry="6.5" transform="rotate(-20 38 84)" fill="var(--card)"/>';
+ s+='<path d="M28 86 V122" fill="none"/></g><circle cx="58" cy="84" r="3" fill="currentColor"/>';
+ s+='<path d="M309 32 V91" stroke="var(--line)" stroke-width="1.5"/>';
+ return s+'</svg>';
+}
+function drawN(){
+ var meter=[['4/4','4 × 1/4',4,'Fire fjerdedele'],['3/4','3 × 1/4',3,'Tre fjerdedele'],['6/8','2 × 3/8',2,'To grupper à tre ottendedele'],['12/8','4 × 3/8',4,'Fire grupper à tre ottendedele']];
+ var values=[['Helnode','1','whole'],['Halvnode','1/2','half'],['Fjerdedel','1/4','quarter'],['Ottendedel','1/8','eighth'],['16.-del','1/16','sixteenth']];
+ var out='<div class="card"><div class="big">Læs noder</div><div class="read-lead">Når du læser en takt: Find pulsen, se nodeværdierne, og hold øje med prikker, bjælker og buer.</div></div>';
+ out+='<section class="card"><h2 class="read-head">1. Hvordan er takten bygget op?</h2><div class="read-meters">';
+ meter.forEach(function(m){out+='<div class="read-meter"><div class="read-meter-title"><b>'+m[0]+'</b><span>'+m[1]+'</span></div><div class="read-meter-bars">'+Array(m[2]).fill('<span></span>').join('')+'</div><div class="read-meter-desc">'+m[3]+'</div></div>';});
+ out+='</div><div class="read-tip">I 6/8 og 12/8 mærkes pulsen typisk i grupper à 3/8. <b>3/8 = en punkteret fjerdedel.</b> Andre rytmiske opdelinger er mulige.</div></section>';
+ out+='<section class="card"><h2 class="read-head">2. Hvor længe varer noden?</h2><div class="read-values">';
+ values.forEach(function(v){out+='<div class="read-value">'+readNoteSVG(v[2],false)+'<strong>'+v[0]+'</strong><span>'+v[1]+'</span></div>';});
+ out+='</div><div class="read-tip">Værdierne er dele af en helnode, uanset taktarten. Hver værdi er halvdelen af den foregående.</div></section>';
+ out+='<section class="card"><h2 class="read-head">3. Prikken forlænger med 50 %</h2><div class="read-dots">';
+ [['Halvnode','half','1/2 + 1/4 = 3/4'],['Fjerdedel','quarter','1/4 + 1/8 = 3/8'],['Ottendedel','eighth','1/8 + 1/16 = 3/16']].forEach(function(r){out+='<div class="read-dotrow">'+readNoteSVG(r[1],true)+'<span>'+r[0]+' med prik</span><b>'+r[2]+'</b></div>';});
+ out+='</div></section>';
+ out+='<section class="card"><h2 class="read-head">4. Bjælker og bindebuer</h2><div class="read-signs">'+
+ '<div class="read-sign">'+readBeamSVG(false)+'<strong>Én bjælke</strong><span>Ottendedele</span></div>'+
+ '<div class="read-sign">'+readBeamSVG(true)+'<strong>To bjælker</strong><span>Sekstendedele</span></div>'+
+ '<div class="read-sign">'+readTieSVG()+'<strong>Bindebue</strong><span>Samme tone holdes. Kun ét anslag.</span></div>'+
+ '</div><div class="read-tip">Et frit flag på en enkelt node har samme værdi som en tilsvarende bjælke. En bue mellem forskellige toner er en frasebue.</div></section>';
+ out+='<section class="card"><h2 class="read-head">5. Flere stemmer samtidig</h2>'+readVoicesSVG()+
+ '<div class="read-key">Nederst: 6/8 holdes. Øverst: 6 × 1/8 spilles.</div>'+
+ '<div class="read-tip">De to stemmer varer lige længe og lyder samtidig. Stilkene kan vende hver sin vej for at vise stemmerne.</div></section>';
+ return out;
+}
+
 var MAJOR_CIRCLE=[0,1,2,3,4,5,6,8,9,10,11,12];
 var MINOR_CIRCLE=[13,14,15,16,17,18,19,20,21,22,23,24];
 function chooseScale(i){ki=i;drawCircle();upd()}
@@ -186,8 +282,8 @@ function drawCircle(){var rings='<svg viewBox="0 0 360 360" aria-hidden="true"><
  return '<button type="button" class="circle-key'+(type?' minor':'')+(ki===kidx?' on':'')+'" style="left:'+x.toFixed(3)+'%;top:'+y.toFixed(3)+'%" aria-label="Vis '+name+(type?' (mol)':' (dur)')+'" aria-pressed="'+(ki===kidx?'true':'false')+'" onclick="chooseScale('+kidx+')">'+name+'</button>';
  }).join('')}).join('');
  $('circleArea').innerHTML='<div class="circle" role="group" aria-label="Kvintcirkel"><div class="circle-center"><strong>Kvintcirkel</strong><small>Dur ydre<br>Mol indre</small></div>'+rings+circles+'</div><div class="circle-caption">Vælg en toneart for at se skala, fingre og akkorder</div>';}
-function upd(){$('out').innerHTML=tab===0?drawS():tab===1?drawC():tab===2?drawO():tab===3?drawP():drawM()}
-function show(n){tab=n;op=-1;var b=document.querySelectorAll('.tabs button');for(var i=0;i<5;i++)b[i].className=i===n?'on':'';
+function upd(){$('out').innerHTML=tab===0?drawS():tab===1?drawC():tab===2?drawO():tab===3?drawP():tab===4?drawM():drawN()}
+function show(n){tab=n;op=-1;var b=document.querySelectorAll('.tabs button');for(var i=0;i<b.length;i++)b[i].className=i===n?'on':'';
 $('ctl').style.display=(n===1||n===2)?'flex':'none';$('ct').style.display=n===2?'':'none';$('ci').style.display=n===2?'':'none';$('circleArea').style.display=n?'none':'block';upd()}
 document.querySelectorAll('.tabs button').forEach(function(b,i){b.onclick=function(){show(i)}});
 rs.onchange=ts.onchange=iv.onchange=upd;
