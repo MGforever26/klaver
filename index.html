@@ -77,6 +77,8 @@ select{width:100%;font-size:16px;padding:10px}
 .circle-center strong{font-weight:650;font-size:11px;line-height:1.15}
 .circle-center small{font-size:10px;color:var(--ink3);line-height:1.2}
 .circle-caption{font-size:12px;color:var(--ink2);text-align:center;margin-top:-3px}
+.enh-link{border:0;background:none;padding:0;color:var(--ink);font:inherit;text-decoration:underline;cursor:pointer}
+.enh-link:focus-visible{outline:2px solid #7031bb;outline-offset:3px}
 /* VH og HH på én kompakt linje, med diskret skillelinje */
 .chord-step{display:grid;grid-template-columns: minmax(74px,auto) minmax(0,1fr);gap:9px;align-items:center;padding:10px 1px}
 .step-title{font-size:15px;margin:0;white-space:nowrap}
@@ -132,7 +134,7 @@ select{width:100%;font-size:16px;padding:10px}
 <script>
 var N=['C','D','E','F','G','A','H'],nat=[0,2,4,5,7,9,11];
 var cols=['#e34948','#eb6834','#eda100','#008300','#2a78d6','#1f3d99','#8e5bd6'];
-var roots=[['C',0,0],['C♯',0,1],['D♭',1,-1],['D',1,0],['D♯',1,1],['E♭',2,-1],['E',2,0],['F',3,0],['F♯',3,1],['G♭',4,-1],['G',4,0],['G♯',4,1],['A♭',5,-1],['A',5,0],['A♯',5,1],['B',6,-1],['H',6,0]];
+var roots=[['C',0,0],['C♯',0,1],['D♭',1,-1],['D',1,0],['D♯',1,1],['E♭',2,-1],['E',2,0],['F',3,0],['F♯',3,1],['G♭',4,-1],['G',4,0],['G♯',4,1],['A♭',5,-1],['A',5,0],['A♯',5,1],['B♭',6,-1],['H',6,0]];
 var A='1 2 3 1 2 3 4 5',L='5 4 3 2 1 3 2 1',F1='2 3 4 1 2 3 1 2',F2='4 3 2 1 3 2 1 4',L3='3 2 1 4 3 2 1 3';
 var K=[
   ['C',0,0,A,L],
@@ -146,7 +148,7 @@ var K=[
   ['D♭',1,-1,'2 3 1 2 3 4 1 2',L3],
   ['A♭',5,-1,'3 4 1 2 3 1 2 3',L3],
   ['E♭',2,-1,'3 1 2 3 4 1 2 3',L3],
-  ['B',6,-1,'2 1 2 3 1 2 3 4',L3],
+  ['B♭',6,-1,'2 1 2 3 1 2 3 4',L3],
   ['F',3,0,'1 2 3 4 1 2 3 4',L],
   ['A',5,0,A,L,1],
   ['E',2,0,A,L,1],
@@ -154,22 +156,23 @@ var K=[
   ['F♯',3,1,'3 4 1 2 3 1 2 3',F2,1],
   ['C♯',0,1,'3 4 1 2 3 1 2 3',L3,1],
   ['G♯',4,1,'3 4 1 2 3 1 2 3','3 2 1 3 2 1 4 3',1,L3],
-  ['E♭',2,-1,'3 1 2 3 4 1 2 3','2 1 4 3 2 1 3 2',1],
-  ['B',6,-1,'2 1 2 3 1 2 3 4','2 1 3 2 1 4 3 2',1],
+  ['D♯',1,1,'3 1 2 3 4 1 2 3','2 1 4 3 2 1 3 2',1],
+  ['B♭',6,-1,'2 1 2 3 1 2 3 4','2 1 3 2 1 4 3 2',1],
   ['F',3,0,'1 2 3 4 1 2 3 4',L,1],
   ['C',0,0,A,L,1],
   ['G',4,0,A,L,1],
-  ['D',1,0,A,L,1]
+  ['D',1,0,A,L,1],
+  ['E♭',2,-1,'3 1 2 3 4 1 2 3','2 1 4 3 2 1 3 2',1]
 ];
 var T=[['dur','',[[2,4],[4,7]]],['mol (m)','m',[[2,3],[4,7]]],['dim','dim',[[2,3],[4,6]]],['aug','aug',[[2,4],[4,8]]],['sus2','sus2',[[1,2],[4,7]]],['sus4','sus4',[[3,5],[4,7]]],
 ['6','6',[[2,4],[4,7],[5,9]]],['m6','m6',[[2,3],[4,7],[5,9]]],['6/9','6/9',[[2,4],[4,7],[5,9],[8,14]]],
 ['maj7','maj7',[[2,4],[4,7],[6,11]]],['7','7',[[2,4],[4,7],[6,10]]],['m7','m7',[[2,3],[4,7],[6,10]]],['m(Maj7)','m(Maj7)',[[2,3],[4,7],[6,11]]],['m7♭5','m7♭5',[[2,3],[4,6],[6,10]]],['dim7','dim7',[[2,3],[4,6],[6,9]]],['7sus4','7sus4',[[3,5],[4,7],[6,10]]],
 ['maj9','maj9',[[2,4],[4,7],[6,11],[8,14]]],['9','9',[[2,4],[4,7],[6,10],[8,14]]],['m9','m9',[[2,3],[4,7],[6,10],[8,14]]],['7♭9','7♭9',[[2,4],[4,7],[6,10],[8,13]]],['7♯9','7♯9',[[2,4],[4,7],[6,10],[8,15]]],['add9','add9',[[2,4],[4,7],[8,14]]],
 ['maj7♯11','maj7♯11',[[2,4],[4,7],[6,11],[10,18]]],['7♯11','7♯11',[[2,4],[4,7],[6,10],[10,18]]],['11','11',[[2,4],[4,7],[6,10],[8,14],[10,17]]],['m11','m11',[[2,3],[4,7],[6,10],[8,14],[10,17]]],['13','13',[[2,4],[4,7],[6,10],[8,14],[12,21]]],['7♭13','7♭13',[[2,4],[4,7],[6,10],[12,20]]]];
-var ENH={'F♯-dur':'G♭-dur','G♭-dur':'F♯-dur','D♭-dur':'C♯-dur','G♯-mol':'A♭-mol','E♭-mol':'D♯-mol','B-mol':'A♯-mol'};
+var ENH={'F♯-dur':'G♭-dur','G♭-dur':'F♯-dur','D♭-dur':'C♯-dur','G♯-mol':'A♭-mol','D♯-mol':'E♭-mol','E♭-mol':'D♯-mol','B♭-mol':'A♯-mol'};
 function $(i){return document.getElementById(i)}
 function acc(a){return a===0?'':a===1?'♯':a===-1?'♭':a===2?'♯♯':'♭♭'}
-function nm(l,a){if(l===6&&a===-1)return 'B';if(l===6&&a===-2)return 'B♭';return N[l]+acc(a)}
+function nm(l,a){if(l===6&&a===-1)return 'B♭';if(l===6&&a===-2)return 'B♭♭';return N[l]+acc(a)}
 function enh(n,m){return ENH[n+(m?'-mol':'-dur')]||''}
 function sp(R,s,m){var l=(R[1]+s)%7,t=((nat[R[1]]+R[2]+m)%12+12)%12;return{l:l,a:((t-nat[l])%12+18)%12-6,s:s}}
 function chip(x){return '<span class="n'+(x.h?' h':'')+'" style="--c:'+cols[x.l]+'">'+nm(x.l,x.a)+'</span>'}
@@ -186,10 +189,11 @@ function drawS(){
 var k=K[ki],m=k[5],S=m?[0,2,3,5,7,8,10,12]:[0,2,4,5,7,9,11,12],H=[0,2,3,5,7,8,11,12];
 var t=S.map(function(x,i){return sp(k,i,x)}),h7=H.map(function(x,i){return sp(k,i,x)});
 var fs=t.slice(0,7).filter(function(x){return x.a}),fo=fs.length?fs.length+' '+(fs[0].a>0?'♯':'♭')+': '+fs.map(function(x){return nm(x.l,x.a)}).join(' '):'ingen fortegn';
-var eh=enh(k[0],m);
+var eh=enh(k[0],m),alt=K.findIndex(function(v){return v[0]+(v[5]?'-mol':'-dur')===eh});
+ var ehText=alt>=0?'<button type="button" class="enh-link" onclick="chooseScale('+alt+')">'+eh+'</button>':eh;
 var rn=m?['i','ii°','♭III','iv','v','♭VI','♭VII']:['I','ii','iii','IV','V','vi','vii°'];
 var sx=cm?(m?['m7','m7♭5','maj7','m7','m7','maj7','7']:['maj7','m7','m7','maj7','7','m7','m7♭5']):(m?['m','dim','','m','m','','']:['','m','m','','','m','dim']),w=cm?'7-akkorder':'treklange',sg='<div class="seg"><button'+(cm?'':' class="on"')+' onclick="cm=0;upd()">Treklange</button><button'+(cm?' class="on"':'')+' onclick="cm=1;upd()">Septimakkorder</button></div>';
-var o='<div class="card"><div class="big">'+k[0]+(m?'-mol':'-dur')+'</div><div class="sub">Fortegn: '+fo+'</div>'+(eh?'<div class="sub">Enharmonisk: '+eh+' (samme tangenter)</div>':'')+'<div class="sub">'+(m?'Naturlig mol: halvtoner mellem trin 2–3 og 5–6. Harmonisk mol: 7. tone hæves, så der er halvtone 7–8 og 1½ tone mellem 6–7.':'Halvtoner mellem trin 3–4 og 7–8.')+' Fingre: 1 = tommel'+(m?(k[6]?' (naturlig og harmonisk mol har forskellig fingersætning i VH)':' (samme for begge former)'):'')+'. HH op, VH op fra grundtonen.</div><div class="g"><b>'+(m?'Nat.':'')+'</b>'+t.map(chip).join('')+(m?'<b>Harm.</b>'+h7.map(chip).join(''):'')+'<b>HH</b>'+k[3].split(' ').map(fin).join('')+'<b>VH</b>'+k[4].split(' ').map(fin).join('')+(m&&k[6]?'<b>VH harm.</b>'+k[6].split(' ').map(fin).join(''):'')+'</div></div>';
+var o='<div class="card"><div class="big">'+k[0]+(m?'-mol':'-dur')+'</div><div class="sub">Fortegn: '+fo+'</div>'+(eh?'<div class="sub">Enharmonisk: '+ehText+' (samme tangenter)</div>':'')+'<div class="sub">'+(m?'Naturlig mol: halvtoner mellem trin 2–3 og 5–6. Harmonisk mol: 7. tone hæves, så der er halvtone 7–8 og 1½ tone mellem 6–7.':'Halvtoner mellem trin 3–4 og 7–8.')+' Fingre: 1 = tommel'+(m?(k[6]?' (naturlig og harmonisk mol har forskellig fingersætning i VH)':' (samme for begge former)'):'')+'. HH op, VH op fra grundtonen.</div><div class="g"><b>'+(m?'Nat.':'')+'</b>'+t.map(chip).join('')+(m?'<b>Harm.</b>'+h7.map(chip).join(''):'')+'<b>HH</b>'+k[3].split(' ').map(fin).join('')+'<b>VH</b>'+k[4].split(' ').map(fin).join('')+(m&&k[6]?'<b>VH harm.</b>'+k[6].split(' ').map(fin).join(''):'')+'</div></div>';
 o+='<div class="card">'+sg+'<div class="sub" style="margin:0 0 6px">Naturlige '+w+(m?' (naturlig mol)':'')+'</div>'+ch(t,rn,sx)+'</div>';
 if(m)o+='<div class="card"><div class="sub" style="margin:0 0 6px">'+w[0].toUpperCase()+w.slice(1)+' i harmonisk mol</div>'+ch(h7,['i','ii°','♭III+','iv','V','♭VI','vii°'],cm?['m(Maj7)','m7♭5','maj7♯5','m7','7','maj7','dim7']:['m','dim','aug','m','','','dim'])+'</div>';
 return o;
@@ -211,20 +215,20 @@ return op<0?h+'</div>':d;
 function drawO(){
 var R=roots[+rs.value],Ty=T[+ts.value],tn=tones(R,Ty),k=+iv.value,disp=rot(tn,k);
 var bars=disp.map(function(f){var h=1+f.a*.5,px=h===0?3:Math.round(h*64);return '<div class="b"><div class="bar" style="height:'+px+'px;background:'+cols[f.l]+'"></div><div class="bl" style="bottom:'+(px+3)+'px">'+nm(f.l,f.a)+'</div></div>'}).join('');
-return '<div class="card"><div class="big">'+R[0]+Ty[1]+'</div><div class="sub">Fra bunden'+(k?' ('+k+'. omvending)':'')+':</div><div>'+disp.map(chip).join('')+'</div><div id="plot"><div class="dash"></div>'+bars+'</div><div id="tk">'+disp.map(function(x){return '<div>'+(x.s?x.s+1:'grund')+'</div>'}).join('')+'</div><div class="note">Søjlerne følger omvendingen. Farve = tonenavn. Højde: ♭ lav · naturlig midt (stiplet) · ♯ høj. H er det danske navn for B (engelsk).</div></div>';
+return '<div class="card"><div class="big">'+R[0]+Ty[1]+'</div><div class="sub">Fra bunden'+(k?' ('+k+'. omvending)':'')+':</div><div>'+disp.map(chip).join('')+'</div><div id="plot"><div class="dash"></div>'+bars+'</div><div id="tk">'+disp.map(function(x){return '<div>'+(x.s?x.s+1:'grund')+'</div>'}).join('')+'</div><div class="note">Søjlerne følger omvendingen. Farve = tonenavn. Højde: ♭ lav · naturlig midt (stiplet) · ♯ høj. H er det danske navn for internationalt B; B♭ er dansk Bes (traditionelt B).</div></div>';
 }
 
-var JAZZ=[{"name":"Kromatiske 7’ere","subtitle":"Fire grundtoner falder i halvtonetrin. Afslut med en farvet mol9-klang.","steps":[["Cm7",["C","G"],["E♭","B"]],["Hmaj7",["H","F♯"],["D♯","A♯"]],["Bm7",["B","F"],["D♭","A♭"]],["Amaj7",["A","E"],["C♯","G♯"]],["C♯m9",["C♯","G♯","D♯"],["E","G♯","H","D♯"]]],"note":"Prøv også C♯m11 som afslutning: VH C♯ · E · G♯ og HH H · D♯ · F♯."},{"name":"Glide progression","subtitle":"Flyt først højre hånd, så venstre hånd, og til sidst højre hånd igen.","steps":[["Cm7",["C","G"],["E♭","B"]],["Cmaj7",["C","G"],["E","H"]],["C♯m7",["C♯","G♯"],["E","H"]],["C♯maj7",["C♯","G♯"],["E♯","H♯"]]],"note":"Hold tonerne fælles, når du kan. Hver bevægelse på skift består af to halvtonetrin."},{"name":"Arpeggierede 11’ere","subtitle":"Lad tonerne flyde én efter én i stedet for at slå hele akkorden an samlet.","steps":[["Fm11",["F","C"],["A♭","E♭","G","B"]],["A♭maj11",["A♭","E♭"],["C","G","B","D♭"]],["Cm11",["C","G"],["E♭","B","D","F"]],["Bmaj11",["B","F"],["D","A","C","E♭"]],["A♭maj11",["A♭","E♭"],["C","G","B","D♭"]]],"note":"Håndfordelingen er et forslag fra dokumentet. Du kan variere den og flytte oktaver."}];
-var MODS=[[["Cm9",["C","G"],["E♭","B","D"]],["D♭maj7",["D♭","A♭"],["F","C"]],["Fm9",["F","C"],["A♭","E♭","G"]]],[["Fm9",["F","C"],["A♭","E♭","G"]],["G♭maj7",["G♭","D♭"],["B","F"]],["Bm9",["B","F"],["D♭","A♭","C"]]],[["Bm9",["B","F"],["D♭","A♭","C"]],["Hmaj7",["H","F♯"],["D♯","A♯"]],["E♭m9",["E♭","B"],["G♭","D♭","F"]]],[["E♭m9",["E♭","B"],["G♭","D♭","F"]],["Emaj7",["E","H"],["G♯","D♯"]],["G♯m9",["G♯","D♯"],["H","F♯","A♯"]]],[["G♯m9",["G♯","D♯"],["H","F♯","A♯"]],["Amaj7",["A","E"],["C♯","G♯"]],["C♯m9",["C♯","G♯"],["E","H","D♯"]]],[["C♯m9",["C♯","G♯"],["E","H","D♯"]],["Dmaj7",["D","A"],["F♯","C♯"]],["F♯m9",["F♯","C♯"],["A","E","G♯"]]],[["F♯m9",["F♯","C♯"],["A","E","G♯"]],["Gmaj7",["G","D"],["H","F♯"]],["Hm9",["H","F♯"],["D","A","C♯"]]],[["Hm9",["H","F♯"],["D","A","C♯"]],["Cmaj7",["C","G"],["E","H"]],["Em9",["E","H"],["G","D","F♯"]]],[["Em9",["E","H"],["G","D","F♯"]],["Fmaj7",["F","C"],["A","E"]],["Am9",["A","E"],["C","G","H"]]],[["Am9",["A","E"],["C","G","H"]],["Bmaj7",["B","F"],["D","A"]],["Dm9",["D","A"],["F","C","E"]]],[["Dm9",["D","A"],["F","C","E"]],["E♭maj7",["E♭","B"],["G","D"]],["Gm9",["G","D"],["B","F","A"]]],[["Gm9",["G","D"],["B","F","A"]],["A♭maj7",["A♭","E♭"],["C","G"]],["Cm9",["C","G"],["E♭","B","D"]]]];
-var PHOTO_CHORDS=['E♭maj7','Bm7','E♭7','A♭maj7','A♭m7','D♭7','E♭maj7','Cm7','Fm7','B7','G7','C7','F9','B7'];
+var JAZZ=[{"name":"Kromatiske 7’ere","subtitle":"Fire grundtoner falder i halvtonetrin. Afslut med en farvet mol9-klang.","steps":[["Cm7",["C","G"],["E♭","B♭"]],["Hmaj7",["H","F♯"],["D♯","A♯"]],["B♭m7",["B♭","F"],["D♭","A♭"]],["Amaj7",["A","E"],["C♯","G♯"]],["C♯m9",["C♯","G♯","D♯"],["E","G♯","H","D♯"]]],"note":"Prøv også C♯m11 som afslutning: VH C♯ · E · G♯ og HH H · D♯ · F♯."},{"name":"Glide progression","subtitle":"Flyt først højre hånd, så venstre hånd, og til sidst højre hånd igen.","steps":[["Cm7",["C","G"],["E♭","B♭"]],["Cmaj7",["C","G"],["E","H"]],["C♯m7",["C♯","G♯"],["E","H"]],["C♯maj7",["C♯","G♯"],["E♯","H♯"]]],"note":"Hold tonerne fælles, når du kan. Hver bevægelse på skift består af to halvtonetrin."},{"name":"Arpeggierede 11’ere","subtitle":"Lad tonerne flyde én efter én i stedet for at slå hele akkorden an samlet.","steps":[["Fm11",["F","C"],["A♭","E♭","G","B♭"]],["A♭maj11",["A♭","E♭"],["C","G","B♭","D♭"]],["Cm11",["C","G"],["E♭","B♭","D","F"]],["B♭maj11",["B♭","F"],["D","A","C","E♭"]],["A♭maj11",["A♭","E♭"],["C","G","B♭","D♭"]]],"note":"Håndfordelingen er et forslag fra dokumentet. Du kan variere den og flytte oktaver."}];
+var MODS=[[["Cm9",["C","G"],["E♭","B♭","D"]],["D♭maj7",["D♭","A♭"],["F","C"]],["Fm9",["F","C"],["A♭","E♭","G"]]],[["Fm9",["F","C"],["A♭","E♭","G"]],["G♭maj7",["G♭","D♭"],["B♭","F"]],["B♭m9",["B♭","F"],["D♭","A♭","C"]]],[["B♭m9",["B♭","F"],["D♭","A♭","C"]],["Hmaj7",["H","F♯"],["D♯","A♯"]],["E♭m9",["E♭","B♭"],["G♭","D♭","F"]]],[["E♭m9",["E♭","B♭"],["G♭","D♭","F"]],["Emaj7",["E","H"],["G♯","D♯"]],["G♯m9",["G♯","D♯"],["H","F♯","A♯"]]],[["G♯m9",["G♯","D♯"],["H","F♯","A♯"]],["Amaj7",["A","E"],["C♯","G♯"]],["C♯m9",["C♯","G♯"],["E","H","D♯"]]],[["C♯m9",["C♯","G♯"],["E","H","D♯"]],["Dmaj7",["D","A"],["F♯","C♯"]],["F♯m9",["F♯","C♯"],["A","E","G♯"]]],[["F♯m9",["F♯","C♯"],["A","E","G♯"]],["Gmaj7",["G","D"],["H","F♯"]],["Hm9",["H","F♯"],["D","A","C♯"]]],[["Hm9",["H","F♯"],["D","A","C♯"]],["Cmaj7",["C","G"],["E","H"]],["Em9",["E","H"],["G","D","F♯"]]],[["Em9",["E","H"],["G","D","F♯"]],["Fmaj7",["F","C"],["A","E"]],["Am9",["A","E"],["C","G","H"]]],[["Am9",["A","E"],["C","G","H"]],["B♭maj7",["B♭","F"],["D","A"]],["Dm9",["D","A"],["F","C","E"]]],[["Dm9",["D","A"],["F","C","E"]],["E♭maj7",["E♭","B♭"],["G","D"]],["Gm9",["G","D"],["B♭","F","A"]]],[["Gm9",["G","D"],["B♭","F","A"]],["A♭maj7",["A♭","E♭"],["C","G"]],["Cm9",["C","G"],["E♭","B♭","D"]]]];
+var PHOTO_CHORDS=['E♭maj7','B♭m7','E♭7','A♭maj7','A♭m7','D♭7','E♭maj7','Cm7','Fm7','B♭7','G7','C7','F9','B♭7'];
 var PHOTO={name:'Jazzvending i Es-dur',subtitle:'Fra dit billede: ii–V-forbindelser, en tilbagevending via As-mol og en kæde af dominantakkorder.',note:'Akkorderne er aflæst fra billedet. Håndfordelingen er praktiske forslag, ikke en afskrift af melodien.'};
 function photoChord(s){var quality=s.endsWith('maj7')?'maj7':s.endsWith('m7')?'m7':s.endsWith('9')?'9':'7';
  var rootName=s.slice(0,s.length-quality.length);var R=roots.find(function(r){return r[0]===rootName});
  if(!R)throw Error('Ukendt akkordgrundtone: '+s);
  var t=tones(R,T[ix(quality)]);
  return [s,[nm(t[0].l,t[0].a),nm(t[2].l,t[2].a)], [nm(t[1].l,t[1].a),nm(t[3].l,t[3].a)].concat(quality==='9'?[nm(t[4].l,t[4].a)]:[])];}
-var GLIDE_NAMES=['C','D♭','D','E♭','E','F','F♯','G','A♭','A','B','H'];
-var GLIDE_NEXT=['C♯','D','E♭','E','F','F♯','G','G♯','A','B','H','C'];
+var GLIDE_NAMES=['C','D♭','D','E♭','E','F','F♯','G','A♭','A','B♭','H'];
+var GLIDE_NEXT=['C♯','D','E♭','E','F','F♯','G','G♯','A','B♭','H','C'];
 var pr=0,mo=0,glideKey=0;
 function glideRows(){var names=[GLIDE_NAMES[glideKey],GLIDE_NEXT[glideKey]];
  return [0,1,2,3].map(function(i){var type=i%2?'maj7':'m7';var R=roots.find(function(x){return x[0]===names[Math.floor(i/2)]});var t=tones(R,T[ix(type)]);
@@ -305,7 +309,8 @@ function chooseScale(i){ki=i;drawCircle();upd()}
 function drawCircle(){var rings='<svg viewBox="0 0 360 360" aria-hidden="true"><circle cx="180" cy="180" r="153" fill="none" stroke="var(--hair)" stroke-width="1"/><circle cx="180" cy="180" r="99" fill="none" stroke="var(--hair)" stroke-width="1"/><circle cx="180" cy="180" r="60" fill="none" stroke="var(--hair)" stroke-width="1"/></svg>';
  var circles=[MAJOR_CIRCLE,MINOR_CIRCLE].map(function(set,type){return set.map(function(kidx,j){var angle=(-90+j*30)*Math.PI/180;var radius=type?27.5:43.5;
  var x=50+radius*Math.cos(angle),y=50+radius*Math.sin(angle);var name=K[kidx][0]+(type?'m':'');
- return '<button type="button" class="circle-key'+(type?' minor':'')+(ki===kidx?' on':'')+'" style="left:'+x.toFixed(3)+'%;top:'+y.toFixed(3)+'%" aria-label="Vis '+name+(type?' (mol)':' (dur)')+'" aria-pressed="'+(ki===kidx?'true':'false')+'" onclick="chooseScale('+kidx+')">'+name+'</button>';
+ var active=ki===kidx||enh(K[ki][0],!!K[ki][5])===K[kidx][0]+(type?'-mol':'-dur');
+ return '<button type="button" class="circle-key'+(type?' minor':'')+(active?' on':'')+'" style="left:'+x.toFixed(3)+'%;top:'+y.toFixed(3)+'%" aria-label="Vis '+name+(type?' (mol)':' (dur)')+'" aria-pressed="'+(active?'true':'false')+'" onclick="chooseScale('+kidx+')">'+name+'</button>';
  }).join('')}).join('');
  $('circleArea').innerHTML='<div class="circle" role="group" aria-label="Kvintcirkel"><div class="circle-center"><strong>Kvintcirkel</strong><small>Dur ydre<br>Mol indre</small></div>'+rings+circles+'</div><div class="circle-caption">Vælg en toneart for at se skala, fingre og akkorder</div>';}
 function upd(){$('out').innerHTML=tab===0?drawS():tab===1?drawC():tab===2?drawO():tab===3?drawP():tab===4?drawM():drawN()}
