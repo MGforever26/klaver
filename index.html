@@ -120,6 +120,9 @@ select{width:100%;font-size:16px;padding:10px}
 .read-sign span{display:block;font-size:11px;line-height:1.35;color:var(--ink2)}
 .read-voices{width:100%;height:auto;max-height:145px;display:block}
 .read-key{font-size:13px;font-weight:550;margin-top:10px}
+.read-pause-example{border-top:1px solid var(--hair);margin-top:14px;padding-top:4px}
+.read-pause-voice{display:block;width:100%;max-width:320px;height:auto;margin:6px auto 0}
+
 </style>
 </head>
 <body>
@@ -279,6 +282,22 @@ function readVoicesSVG(){
  s+='<path d="M309 32 V91" stroke="var(--line)" stroke-width="1.5"/>';
  return s+'</svg>';
 }
+function readPauseVoiceSVG(){
+ var s='<svg class="read-pause-voice" viewBox="0 0 300 118" role="img" aria-label="Øverste stemme: punkteret fjerdedel holdes over tre ottendedele. Nederste stemme: ottendedelspause efterfulgt af to ottendedele.">';
+ for(var i=0;i<5;i++)s+='<path d="M12 '+(37+i*12)+' H288" stroke="var(--line)" stroke-width="1"/>';
+ s+='<g stroke="currentColor" stroke-width="2" fill="none">'+
+ '<ellipse cx="51" cy="49" rx="10" ry="6" fill="currentColor" transform="rotate(-20 51 49)"/>'+
+ '<path d="M60 47 V8"/>'+
+ '<ellipse cx="144" cy="73" rx="10" ry="6" fill="currentColor" transform="rotate(-20 144 73)"/>'+
+ '<ellipse cx="237" cy="73" rx="10" ry="6" fill="currentColor" transform="rotate(-20 237 73)"/>'+
+ '<path d="M134 76 V105 M227 76 V105"/>'+
+ '</g><path d="M134 99 H227 V106 H134 Z" fill="currentColor"/>'+
+ '<circle cx="75" cy="49" r="3" fill="currentColor"/>'+
+ '<circle cx="58" cy="65" r="3.5" fill="currentColor"/>'+
+ '<path d="M59 65 Q60 77 48 84" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round"/>'+
+ '<g fill="var(--ink2)" font-size="10" text-anchor="middle"><text x="51" y="117">Pause</text><text x="144" y="117">1/8</text><text x="237" y="117">1/8</text></g>';
+ return s+'</svg>';
+}
 function drawN(){
  var meter=[['4/4','4 × 1/4',4,'Fire fjerdedele'],['3/4','3 × 1/4',3,'Tre fjerdedele'],['6/8','2 × 3/8',2,'To grupper à tre ottendedele'],['12/8','4 × 3/8',4,'Fire grupper à tre ottendedele']];
  var values=[['Helnode','1','whole'],['Halvnode','1/2','half'],['Fjerdedel','1/4','quarter'],['Ottendedel','1/8','eighth'],['16.-del','1/16','sixteenth']];
@@ -299,7 +318,9 @@ function drawN(){
  '</div><div class="read-tip">Et frit flag på en enkelt node har samme værdi som en tilsvarende bjælke. En bue mellem forskellige toner er en frasebue.</div></section>';
  out+='<section class="card"><h2 class="read-head">5. Flere stemmer samtidig</h2>'+readVoicesSVG()+
  '<div class="read-key">Nederst: 6/8 holdes. Øverst: 6 × 1/8 spilles.</div>'+
- '<div class="read-tip">De to stemmer varer lige længe og lyder samtidig. Stilkene kan vende hver sin vej for at vise stemmerne.</div></section>';
+ '<div class="read-tip">De to stemmer varer lige længe og lyder samtidig. Stilkene kan vende hver sin vej for at vise stemmerne.</div>'+
+ '<div class="read-pause-example"><div class="read-key">Pause i én stemme (takt 52)</div>'+readPauseVoiceSVG()+
+ '<div class="read-tip">Øverst: én punkteret fjerdedel holdes i 3/8. Nederst: pause 1/8, så to ottendedele. Pausen gælder kun den nederste stemme.</div></div></section>';
  return out;
 }
 
