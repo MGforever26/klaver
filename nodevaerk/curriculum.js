@@ -7,6 +7,7 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(E){
 'use strict';
 const oldQuestion=E.question;
+E.SKILLS.passage='Takter og samspil';
 const DOMAINS=['treble','bass','accidental','rhythm','interval','passage'];
 const SIGS={C:'C-dur',G:'G-dur',F:'F-dur',D:'D-dur'};
 const METERS=['2/4','3/4','4/4','6/8','12/8'];
