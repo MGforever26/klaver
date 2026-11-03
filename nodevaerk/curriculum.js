@@ -147,7 +147,7 @@ function applyAssessment(state,session,now=Date.now()){
  for(const skill of DOMAINS){
   const attempts=session.results.filter(x=>x.q.skill===skill).map(x=>x.result);
   if(attempts.length!==3)throw Error('Manglende svar i niveautjek: '+skill);
-  const hits=attempts.filter(a=>a.correct),fast=E.median(hits.map(a=>a.ms));
+  const hits=attempts.filter(a=>a.correct),fast=E.median(hits.map(a=>Number.isFinite(a.equivalentMs)?a.equivalentMs:a.ms));
   const estimate=hits.length===3&&fast!==null&&fast<=E.LIMITS[skill]*1.8?3:hits.length>=2?2:1;
   const before=state.skills[skill].level;
   state.skills[skill].level=Math.max(before,estimate);state.skills[skill].window=[];
