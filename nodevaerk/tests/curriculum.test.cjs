@@ -135,3 +135,11 @@ test('10,000 diverse generated questions pass answer and music validation',()=>{
   }
  }
 });
+
+test('12/8 notation beams are grouped as four triples of eighth notes',()=>{
+ const VF=require('vexflow').Flow;
+ const notes=Array.from({length:12},()=>new VF.StaveNote({keys:['g/4'],duration:'8',clef:'treble'}));
+ const beams=VF.Beam.generateBeams(notes,{groups:[new VF.Fraction(3,8)]});
+ assert.equal(beams.length,4);
+ assert.ok(beams.every(b=>b.notes.length===3));
+});
