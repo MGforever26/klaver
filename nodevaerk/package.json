@@ -1,0 +1,13 @@
+{
+  "name": "nodevaerk",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "vexflow": "4.2.5"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.cjs",
+    "qa:prepare": "node scripts/qa.cjs",
+    "qa:clean": "node scripts/qa.cjs --clean"
+  }
+}
