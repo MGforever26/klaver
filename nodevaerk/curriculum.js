@@ -25,7 +25,7 @@ function keyed(q){q.id=q.skill+':score:'+hash(JSON.stringify([q.score,q.target,q
 function parseDuration(s){const d=s.replace('d','');return {duration:d,dots:s.endsWith('d')?1:0};}
 function beats(pattern){return pattern.reduce((sum,s)=>sum+E.beats(parseDuration(s)),0);}
 function meterBeats(meter){const [n,d]=meter.split('/').map(Number);return 4*n/d;}
-function meterFor(level,r){return pick(level===1?['3/4','4/4']:level===2?['2/4','3/4','4/4']:METERS,r);}
+function meterFor(level,r){return pick(level===1?['3/4','4/4']:level===2?['2/4','3/4','4/4','6/8','12/8']:METERS,r);}
 function patternFor(meter,level,r){const tier=level<=1?0:level===2?1:2;const pattern=pick(PATTERNS[meter][tier],r);if(Math.abs(beats(pattern)-meterBeats(meter))>1e-9)throw Error('Forkert taktlængde: '+meter+' '+pattern.join(' '));return pattern;}
 function noteWalk(clef,count,level,r){
  const ranges=clef==='treble'?[[30,36],[28,38],[27,40],[26,42]]:[[19,25],[18,28],[17,30],[16,32]];
