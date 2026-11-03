@@ -5,3 +5,6 @@
 
 /* Curriculum 2: calibration and full-bar answer choices. */
 .assessment-card{margin:16px 0 24px}.assessment-card h2{font-size:21px;margin:7px 0}.assessment-card p{line-height:1.55;margin:10px 0 17px}.assessment-card .secondary{width:100%}.assessment-results{margin-bottom:18px}.assessment-results h2{font-size:20px;margin-bottom:12px}.assessment-skill{padding:10px 0;border-bottom:1px solid var(--border,#e3e5de);gap:12px;flex-wrap:wrap}.assessment-skill span{font-size:13px;color:var(--muted,#65716a)}.choices .choice{line-height:1.45;overflow-wrap:anywhere}.measure-caption{font-weight:650}
+
+/* Keep complete 12/8 and dense measures readable on narrow phones. */
+.notation-system{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-inline:contain}.notation-system svg{max-width:none}.notation-system>.measure-caption{position:sticky;left:0}
