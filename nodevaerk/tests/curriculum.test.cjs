@@ -143,3 +143,18 @@ test('12/8 notation beams are grouped as four triples of eighth notes',()=>{
  assert.equal(beams.length,4);
  assert.ok(beams.every(b=>b.notes.length===3));
 });
+
+test('Reading a full measure gets proportionate response time without hiding raw speed',()=>{
+ const q=C.barNotes(2,()=>.99,'treble','treble');
+ const amount=q.score.measures[0].treble.filter(n=>!n.rest).length;
+ assert.ok(amount>=4);
+ const state=E.newState();state.skills.treble.level=2;
+ for(let i=0;i<10;i++){
+  const attempt=E.record(state,q,q.answer,20000,i);
+  assert.equal(attempt.ms,20000);
+  assert.equal(attempt.equivalentMs,20000/amount);
+ }
+ assert.equal(state.skills.treble.level,3);
+ const persisted=JSON.parse(JSON.stringify(state));
+ assert.ok(E.validState(persisted));
+});
