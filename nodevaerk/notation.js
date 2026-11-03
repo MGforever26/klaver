@@ -5,7 +5,7 @@ function staveNote(n,clef){const opts={clef,keys:[n.rest?(clef==='bass'?'d/3':'b
 function render(container,score,options={}){
  container.replaceChildren();const outerWidth=options.width||Math.max(290,Math.min(520,container.clientWidth||340));
  const dense=score.time==='12/8'||score.measures.some(m=>Math.max((m.treble||[]).length,(m.bass||[]).length)>=8);
- const width=dense?Math.max(580,Math.round(outerWidth/1.15)):Math.max(280,Math.round(outerWidth/1.15));
+ const width=dense?Math.max(580,Math.round(outerWidth/1.15),Math.round(580*(options.zoomFactor||1))):Math.max(280,Math.round(outerWidth/1.15));
  const indices=options.indices||score.measures.map((_,i)=>i);const allMeta=[];
  for(const mi of indices){const measure=score.measures[mi];const block=document.createElement('div');block.className='notation-system';if(score.time){const label=document.createElement('div');label.className='measure-caption';label.textContent='Takt '+(mi+1);block.appendChild(label);}const holder=document.createElement('div');block.appendChild(holder);container.appendChild(block);
  const renderer=new VF.Renderer(holder,VF.Renderer.Backends.SVG);renderer.resize(width,224);const ctx=renderer.getContext();
