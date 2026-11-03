@@ -29,12 +29,14 @@ function newState(){return {version:1,attempts:[],totals:{answered:0,correct:0},
 function validState(s){return !!(s&&s.version===1&&Array.isArray(s.attempts)&&s.skills&&Object.keys(SKILLS).every(k=>s.skills[k]&&Number.isInteger(s.skills[k].level)&&s.skills[k].level>=1&&s.skills[k].level<=4&&Array.isArray(s.skills[k].window))&&Array.isArray(s.mistakes)&&s.totals&&Number.isFinite(s.totals.answered)&&Number.isFinite(s.totals.correct)&&Number.isFinite(s.groups)&&s.completedPieces&&s.settings);}
 function record(state,q,answer,ms,now=Date.now()){
  const correct=String(answer)===String(q.answer);const n=q.type==='pitch'?targetNote(q):null;
+ const units=q.kind==='bar-notes'?Math.max(1,((q.score.measures[q.score.measures.length-1]||{})[q.prompt.includes('højre')?'treble':'bass']||[]).filter(n=>!n.rest).length):q.kind==='bar-rhythm'?Math.max(1,(q.target?.index||0)+1):q.kind==='two-hands'?4:1;
  const attempt={skill:q.skill,level:q.level,correct,ms:Math.max(0,Math.min(ms,180000)),at:now,id:q.id,note:n?n.clef+':'+n.letter+n.octave+':'+n.alter:null,answer:String(answer),expected:String(q.answer)};
+ attempt.equivalentMs=attempt.ms/units;
  state.attempts.push(attempt);if(state.attempts.length>4000)state.attempts.splice(0,state.attempts.length-4000);
  state.totals.answered++;if(correct)state.totals.correct++;
  const sk=state.skills[q.skill];sk.window.push(attempt);if(sk.window.length>24)sk.window.shift();
  const recent=sk.window.filter(a=>a.level===sk.level).slice(-10);let change=0;
- if(recent.length===10){const hits=recent.filter(a=>a.correct),speed=median(hits.map(a=>a.ms));if(hits.length>=9&&speed<=LIMITS[q.skill]&&sk.level<4)change=1;else if(hits.length<=5&&sk.level>1)change=-1;}
+ if(recent.length===10){const hits=recent.filter(a=>a.correct),speed=median(hits.map(a=>Number.isFinite(a.equivalentMs)?a.equivalentMs:a.ms));if(hits.length>=9&&speed<=LIMITS[q.skill]&&sk.level<4)change=1;else if(hits.length<=5&&sk.level>1)change=-1;}
  if(change){sk.level+=change;sk.changes.push({level:sk.level,at:now});sk.window=[];}
  state.mistakes=state.mistakes.filter(x=>x.q.id!==q.id);
  if(!correct)state.mistakes.push({q:JSON.parse(JSON.stringify(q)),due:state.groups+1});

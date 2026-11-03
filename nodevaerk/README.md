@@ -1,6 +1,6 @@
 # Nodeværk
 
-Færdig første version af en personlig webapp til nodelæsning på klaver. Dansk brugerflade, mobile skærme, begge nøgler og originale små klaverstykker. Selvstændig app i `nodevaerk/` i klaver-repositoriet. Den eksisterende klaverapp ligger fortsat i roden og ændres ikke af Nodeværk.
+Version 2 med taktlæsning, 12/8 og et indledende niveautjek. Oprindeligt færdig første version af en personlig webapp til nodelæsning på klaver. Dansk brugerflade, mobile skærme, begge nøgler og originale små klaverstykker. Selvstændig app i `nodevaerk/` i klaver-repositoriet. Den eksisterende klaverapp ligger fortsat i roden og ændres ikke af Nodeværk.
 
 ## Brug
 
@@ -50,3 +50,12 @@ Musikalske regler kontrolleret mod LilyPond Notation Reference og Musikipedia, i
 Kopieret fra den publicerede Site-version med kildecommit `6010f0d3cb1270c9354e3f48f3f56179cd6bf455`. Webmanifestets app-id er gjort relativt (`./`), så installationen identificeres med Nodeværks egen undermappe. Serviceworkerens standardomfang er samme mappe. Test- og QA-stier følger den nye mappeplacering. Ingen ændringer i musikmodel, facit eller progression.
 
 Resultater på den oprindelige ChatGPT Site-adresse følger ikke automatisk med til GitHub Pages, da adresserne har hvert sit lokale lager. Det oprindelige private link fungerer fortsat.
+
+
+## Læringsudvidelse, 3. november 2026
+
+Nodeværk 2 tilføjer et selvstændigt `curriculum.js` og en 18-opgavers indledende niveauafklaring med G-nøgle, F-nøgle, fortegn, rytme, intervaller samt takter og samspil. Den eksisterende brugerflade genbruges. Brugeren kan vælge fokuset **Takter**, eller få taktøvelser i **Blandet** fra første øvegruppe. Svar og niveauer fra den oprindelige version bevares, fordi appen fortsat læser og skriver samme `nodevaerk.progress.v1`-datamodel. Niveautjekket kan gentages, men er kun en indledende grov placering baseret på tre opgaver pr. færdighed. Individuel tilpasning fortsætter på hvert område, og tidligere fejl bliver genbesøgt.
+
+Nye opgavetyper: læs en hel tonerække i en takt, find en tones indsatstidspunkt i en takt, og find samtidige anslag i G- og F-nøgle. Fra niveau 3 vises typisk to takter til sammenhængende læsning. Taktarterne er **2/4, 3/4, 4/4, 6/8 og 12/8**. I 6/8 tælles normalt to hovedslag med tre ottendedele, i 12/8 fire sådanne hovedslag. For spørgsmål om præcis placering i 6/8 eller 12/8 nummererer appen ottendedelene 1-6 eller 1-12, mens grupperingen i tre vises i instruktionen. VexFlow tegner hver tredelt ottendedelsgruppe som en gruppe. Tætte takter kan rulles vandret på iPhone.
+
+Automatiske tests for varighed, fortegn, nodefølger, svarmuligheder, de fem taktarter og niveautjek findes i `tests/curriculum.test.cjs`. En bestået testkørsel er ikke det samme som endelig visuel kvalitetssikring på en fysisk iPhone. Appen vurderer fortsat nodelæsningssvar, ikke fysisk klaverspil.
