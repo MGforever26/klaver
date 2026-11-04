@@ -1,12 +1,12 @@
 # Nodeværk
 
-Version 2 med taktlæsning, 12/8 og et indledende niveautjek. Oprindeligt færdig første version af en personlig webapp til nodelæsning på klaver. Dansk brugerflade, mobile skærme, begge nøgler og originale små klaverstykker. Selvstændig app i `nodevaerk/` i klaver-repositoriet. Den eksisterende klaverapp ligger fortsat i roden og ændres ikke af Nodeværk.
+Version 3 med 42 øvestykker, klaverstudie, tonerækker, akkorder, bankerytmer og gentagelser over flere dage. Oprindeligt færdig første version af en personlig webapp til nodelæsning på klaver. Dansk brugerflade, mobile skærme, begge nøgler og originale små klaverstykker. Selvstændig app i `nodevaerk/` i klaver-repositoriet. Den eksisterende klaverapp ligger fortsat i roden og ændres ikke af Nodeværk.
 
 ## Brug
 
 Åbn Nodeværks eget link: https://mgforever26.github.io/klaver/nodevaerk/. Appen har eget ikon og egen hjemmeskærmsgenvej. Begynd med en blandet gruppe på fem opgaver. Første svar registreres; fejl gentages i senere grupper. Stykker kan læses i grupper på højst fem toner og høres med justerbart tempo. Appen måler læsesvar, ikke fysisk klaverspil.
 
-Data ligger i localStorage på samme origin i samme browser. Safari, ChatGPT og hjemmeskærm kan have hver deres lager. Vælg gerne den faste hjemmeskærmsgenvej før regelmæssig træning. Ingen serverlagring eller synkronisering. Der gemmes op til 4.000 detaljerede svar, samlet statistik og en igangværende session. En tidligere gyldig tilstand beholdes som lokal sikkerhedskopi. Webstedsdata kan slettes af bruger/browser.
+Data ligger i localStorage på samme origin i samme browser. Safari, ChatGPT og hjemmeskærm kan have hver deres lager. Vælg gerne den faste hjemmeskærmsgenvej før regelmæssig træning. Ingen serverlagring eller synkronisering. Alle eksisterende detaljerede svar, samlet statistik og en igangværende session bevares. Nye svar afkortes ikke ved 4.000. En tidligere gyldig tilstand beholdes som lokal sikkerhedskopi. Webstedsdata kan slettes af bruger/browser.
 
 ## Arkitektur
 
@@ -20,7 +20,7 @@ Data ligger i localStorage på samme origin i samme browser. Safari, ChatGPT og 
 
 ## Musikalske konventioner
 
-Dansk H/B. Internt bruges bogstaverne C-D-E-F-G-A-B med B som stamtonen H, mens toneændring er en separat værdi. Rendering og facit benytter eksplicit bogstav, oktav, fortegn, varighed og takt. Et løst fortegn gælder i samme system, samme oktav og takt; faste fortegn gælder alle oktaver. Takt- og systemhukommelse adskilles. Ingen bindebuer, dobbelte fortegn eller skift af nøgle i denne version. Stykkerne bruger én stemme i hvert system.
+Dansk H/B. Internt bruges bogstaverne C-D-E-F-G-A-B med B som stamtonen H, mens toneændring er en separat værdi. Rendering og facit benytter eksplicit bogstav, oktav, fortegn, varighed og takt. Et løst fortegn gælder i samme system, samme oktav og takt; faste fortegn gælder alle oktaver. Takt- og systemhukommelse adskilles. Akkorder og bindebuer understøttes. Dobbelte fortegn og skift af nøgle understøttes ikke. Stykkerne bruger én stemme i hvert system.
 
 Der testes mod håndskrevne MIDI-facit for begge hænder i alle seks stykker og faste koordinater for anker- og hjælpelinjenoder. Enharmoniske navne er bevidst forskellige svar i læseøvelserne.
 
@@ -59,3 +59,16 @@ Nodeværk 2 tilføjer et selvstændigt `curriculum.js` og en 18-opgavers indlede
 Nye opgavetyper: læs en hel tonerække i en takt, find en tones indsatstidspunkt i en takt, og find samtidige anslag i G- og F-nøgle. Fra niveau 3 vises typisk to takter til sammenhængende læsning. Taktarterne er **2/4, 3/4, 4/4, 6/8 og 12/8**. I 6/8 tælles normalt to hovedslag med tre ottendedele, i 12/8 fire sådanne hovedslag. For spørgsmål om præcis placering i 6/8 eller 12/8 nummererer appen ottendedelene 1-6 eller 1-12, mens grupperingen i tre vises i instruktionen. VexFlow tegner hver tredelt ottendedelsgruppe som en gruppe. Tætte takter kan rulles vandret på iPhone.
 
 Automatiske tests for varighed, fortegn, nodefølger, svarmuligheder, de fem taktarter og niveautjek findes i `tests/curriculum.test.cjs`. En bestået testkørsel er ikke det samme som endelig visuel kvalitetssikring på en fysisk iPhone. Appen vurderer fortsat nodelæsningssvar, ikke fysisk klaverspil.
+
+
+## Version 3, 4. november 2026
+
+36 nye stykker: 24 originale miniaturer og 12 kildekontrollerede uddrag fra Satie, Burgmüller, Mozart og Petzold. De seks eksisterende stykkers id og noder er bevaret. Klassiske uddrag har kilde, licens og beskrivelse af eventuelle forenklinger under Om noderne. Der gengives ikke private nodefiler. Nodekilder: Mutopia-værker 37, 203, 1770 og 75.
+
+`learning.js` udvider den eksisterende model uden at ændre lageridentiteten. `repertoire.js` tilføjer stykkerne. `studio.js` tilføjer klaverspil med optælling, puls, håndvalg, taktudsnit, tempo og separat øvelog. Appen lytter ikke til klaveret. Tapping er vejledende timingtræning, ikke hardwarekalibreret måling.
+
+Tonerækker indtastes tone for tone og dækker begge viste takter. Akkorder læses nedefra. Niveau 4 træner også intervallernes kvalitet og rytmer med sekstendedele og bindebuer. Forkerte svar kommer igen i en senere gruppe. Korrekte gentagelser planlægges efter 1, 3, 7, 21 og 45 dage. Disse intervaller er produktvalg, ikke en individuel læringsgaranti.
+
+Opdateringen genbruger `nodevaerk.progress.v1`, app-id, sti og scope. Før første opgradering gemmes rå gamle data under `.before-v3`, når lagerpladsen tillader det. Eksisterende svar, niveauer, gennemførte stykker og aktiv session ændres ikke af migrationen. Data forbliver lokale i den hidtidige browser eller hjemmeskærmsapp.
+
+Verifikation: 42 automatiske tests bestået, inklusive 10.000 nye opgaver, alle 42 stykkers taktlængder og afspilning, 24 uafhængige klassiske MIDI-facit, akkorder, bindebuer, gentagelsesintervaller og gammel datamigration. 157 browserkontroller bestået, inklusive 720 renderinger og alle stykker ved 320, 375 og 430 px, opgradering med gamle fremskridt, sikkerhedskopi, lagringsfejl og nye svarfelter. Fysisk iPhone/Safari og faktisk lydforsinkelse er ikke hardwaretestet.

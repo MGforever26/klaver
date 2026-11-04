@@ -4,7 +4,9 @@
 const LETTERS=['C','D','E','F','G','A','B'];
 const NATURAL={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
 const KEYS={C:{},G:{F:1},D:{F:1,C:1},F:{B:-1},Bb:{B:-1,E:-1},Eb:{B:-1,E:-1,A:-1}};
+Object.assign(KEYS,{A:{F:1,C:1,G:1},E:{F:1,C:1,G:1,D:1},Ab:{B:-1,E:-1,A:-1,D:-1},Db:{B:-1,E:-1,A:-1,D:-1,G:-1},Am:{},Dm:{B:-1},Em:{F:1},Gm:{B:-1,E:-1}});
 const KEY_NAMES={C:'C-dur',G:'G-dur',D:'D-dur',F:'F-dur',Bb:'B-dur',Eb:'Es-dur'};
+Object.assign(KEY_NAMES,{A:'A-dur',E:'E-dur',Ab:'As-dur',Db:'Des-dur',Am:'A-mol',Dm:'D-mol',Em:'E-mol',Gm:'G-mol'});
 const SKILLS={treble:'G-nøgle',bass:'F-nøgle',accidental:'Fortegn',rhythm:'Rytme',interval:'Intervaller',passage:'Samlet læsning'};
 const DUR={w:4,h:2,q:1,'8':.5,'16':.25};
 const DURATION_NAMES={w:'Helnode',h:'Halvnode',q:'Fjerdedel','8':'Ottendedel','16':'Sekstendedel'};
@@ -18,9 +20,26 @@ function beats(n){if(!DUR[n.duration])throw Error('Ugyldig varighed');return DUR
 function spelling(n,alter=0){const normal={C:'C',D:'D',E:'E',F:'F',G:'G',A:'A',B:'H'};const sharp={C:'Cis',D:'Dis',E:'Eis',F:'Fis',G:'Gis',A:'Ais',B:'His'};const flat={C:'Ces',D:'Des',E:'Es',F:'Fes',G:'Ges',A:'As',B:'B'};return (alter===1?sharp:alter===-1?flat:normal)[n.letter];}
 function pitchId(n,alter){return n.letter+':'+alter;}
 function midi(n,alter=0){return 12*(n.octave+1)+NATURAL[n.letter]+alter;}
-function resolveMeasure(notes,key='C'){if(!KEYS[key])throw Error('Ukendt toneart');const memory={};return notes.map(n=>{if(n.rest)return {...n,beats:beats(n)};const id=n.letter+n.octave;let alter;if(n.acc!==null&&n.acc!==undefined){alter={n:0,'#':1,b:-1}[n.acc];if(alter===undefined)throw Error('Ugyldigt fortegn');memory[id]=alter;}else alter=Object.prototype.hasOwnProperty.call(memory,id)?memory[id]:(KEYS[key][n.letter]||0);return {...n,alter,midi:midi(n,alter),name:spelling(n,alter),id:pitchId(n,alter),beats:beats(n)};});}
-function resolveScore(score){return score.measures.map((m,mi)=>({treble:resolveMeasure(m.treble||[],score.key).map((n,ni)=>({...n,measure:mi,clef:'treble',index:ni})),bass:resolveMeasure(m.bass||[],score.key).map((n,ni)=>({...n,measure:mi,clef:'bass',index:ni}))}));}
-function targetNote(q){return resolveScore(q.score)[q.target.measure][q.target.clef][q.target.index];}
+function pitches(n){return n.rest?[]:[n,...(n.chord||[])];}
+function resolveMeasure(notes,key='C'){
+ if(!KEYS[key])throw Error('Ukendt toneart');const memory={};
+ return notes.map(n=>{if(n.rest)return {...n,beats:beats(n)};
+  const tones=pitches(n).map(p=>{const id=p.letter+p.octave;let alter;
+   if(p.acc!==null&&p.acc!==undefined){alter={n:0,'#':1,b:-1}[p.acc];if(alter===undefined)throw Error('Ugyldigt fortegn');memory[id]=alter;}
+   else alter=Object.prototype.hasOwnProperty.call(memory,id)?memory[id]:(KEYS[key][p.letter]||0);
+   return {...p,alter,midi:midi(p,alter),name:spelling(p,alter),id:pitchId(p,alter)};
+  });return {...n,...tones[0],tones,beats:beats(n)};
+ });
+}
+function resolveScore(score){
+ const previous={treble:null,bass:null};
+ return score.measures.map((m,mi)=>Object.fromEntries(['treble','bass'].map(clef=>[clef,resolveMeasure(m[clef]||[],score.key).map((n,ni)=>{
+  const prev=previous[clef];const tied=!!(prev?.tie&&!n.rest&&prev.tones?.length===n.tones?.length&&prev.tones.every((p,i)=>p.letter===n.tones[i].letter&&p.octave===n.tones[i].octave));
+  if(tied){n.tones=n.tones.map((p,i)=>p.acc===null||p.acc===undefined?{...p,alter:prev.tones[i].alter,midi:prev.tones[i].midi,name:prev.tones[i].name,id:prev.tones[i].id}:p);Object.assign(n,{midi:n.tones[0].midi,alter:n.tones[0].alter,name:n.tones[0].name,id:n.tones[0].id});}
+  previous[clef]=n;return {...n,tied,measure:mi,clef,index:ni};
+ })])));
+}
+function targetNote(q){const n=resolveScore(q.score)[q.target.measure][q.target.clef][q.target.index];return q.target.pitchIndex===undefined?n:n.tones[q.target.pitchIndex];}
 function intervalNumber(a,b){return Math.abs(diatonic(a)-diatonic(b))+1;}
 function durationLabel(n){return (n.dots?'Punkteret ':'')+(n.rest?({w:'helpause',h:'halvpause',q:'fjerdedelspause','8':'ottendedelspause','16':'sekstendedelspause'}[n.duration]):DURATION_NAMES[n.duration].toLowerCase());}
 function beatLabel(n){return String(n).replace('.25','¼').replace('.5','½').replace('.75','¾').replace(/^0/,'');}
@@ -29,10 +48,10 @@ function newState(){return {version:1,attempts:[],totals:{answered:0,correct:0},
 function validState(s){return !!(s&&s.version===1&&Array.isArray(s.attempts)&&s.skills&&Object.keys(SKILLS).every(k=>s.skills[k]&&Number.isInteger(s.skills[k].level)&&s.skills[k].level>=1&&s.skills[k].level<=4&&Array.isArray(s.skills[k].window))&&Array.isArray(s.mistakes)&&s.totals&&Number.isFinite(s.totals.answered)&&Number.isFinite(s.totals.correct)&&Number.isFinite(s.groups)&&s.completedPieces&&s.settings);}
 function record(state,q,answer,ms,now=Date.now()){
  const correct=String(answer)===String(q.answer);const n=q.type==='pitch'?targetNote(q):null;
- const units=q.kind==='bar-notes'?Math.max(1,((q.score.measures[q.score.measures.length-1]||{})[q.prompt.includes('højre')?'treble':'bass']||[]).filter(n=>!n.rest).length):q.kind==='bar-rhythm'?Math.max(1,(q.target?.index||0)+1):q.kind==='two-hands'?4:1;
+ const units=q.units|| (q.kind==='bar-notes'?Math.max(1,((q.score.measures[q.score.measures.length-1]||{})[q.prompt.includes('højre')?'treble':'bass']||[]).filter(n=>!n.rest).length):q.kind==='bar-rhythm'?Math.max(1,(q.target?.index||0)+1):q.kind==='two-hands'?4:1);
  const attempt={skill:q.skill,level:q.level,correct,ms:Math.max(0,Math.min(ms,180000)),at:now,id:q.id,note:n?n.clef+':'+n.letter+n.octave+':'+n.alter:null,answer:String(answer),expected:String(q.answer)};
  attempt.equivalentMs=attempt.ms/units;
- state.attempts.push(attempt);if(state.attempts.length>4000)state.attempts.splice(0,state.attempts.length-4000);
+ state.attempts.push(attempt);
  state.totals.answered++;if(correct)state.totals.correct++;
  const sk=state.skills[q.skill];sk.window.push(attempt);if(sk.window.length>24)sk.window.shift();
  const recent=sk.window.filter(a=>a.level===sk.level).slice(-10);let change=0;
@@ -84,7 +103,7 @@ const PIECES=[
 {id:'boelger',title:'Bløde bølger',subtitle:'B i F-dur og små spring',level:3,key:'F',time:'4/4',tip:'I dansk notation hedder H med b for B. Her gælder det faste b i alle oktaver.',measures:[measure('A4 G4 F4 E4','F3:h C3:h'),measure('F4 A4 B4 C5','B2:h C3:h'),measure('D5 C5 B4 G4','G2:h C3:h'),measure('A4:h F4:h','F3:w')]},
 {id:'drejning',title:'En lille drejning',subtitle:'Ottendedele og opløsningstegn',level:4,key:'D',time:'4/4',tip:'F og C er hævet. I tredje takt ophæves F, indtil næste takt begynder.',measures:[measure('D4:8 E4:8 F4:8 G4:8 A4:h','D3:h A2:h'),measure('B4:8 A4:8 G4:8 F4:8 E4:h','G2:h A2:h'),measure('Fn4:8 E4:8 F4:8 G4:8 A4:h','D3:w'),measure('F4:h D4:h','D3:w')]}
 ];
-function pieceTargets(p){const resolved=resolveScore(p),out=[];resolved.forEach((m,mi)=>{const events=[];for(const clef of ['treble','bass']){let at=0;m[clef].forEach((n,i)=>{if(!n.rest)events.push({measure:mi,clef,index:i,onset:at,n});at+=n.beats;});}events.sort((a,b)=>a.onset-b.onset||(a.clef==='treble'?-1:1));out.push(...events);});return out;}
+function pieceTargets(p){const resolved=resolveScore(p),out=[];resolved.forEach((m,mi)=>{const events=[];for(const clef of ['treble','bass']){let at=0;m[clef].forEach((n,i)=>{if(!n.rest&&!n.tied)events.push({measure:mi,clef,index:i,onset:at,n});at+=n.beats;});}events.sort((a,b)=>a.onset-b.onset||(a.clef==='treble'?-1:1));out.push(...events);});return out;}
 function passageQuestions(p){return pieceTargets(p).map((t,i)=>({id:'piece:'+p.id+':'+i,skill:'passage',level:p.level,type:'pitch',score:p,target:{measure:t.measure,clef:t.clef,index:t.index},prompt:`${t.clef==='treble'?'Højre':'Venstre'} hånd · takt ${t.measure+1}`,detail:`Slag ${beatLabel(t.onset+1)}. Læs den grønne tone.`,answer:t.n.id,answerLabel:t.n.name,explanation:`${t.clef==='treble'?'Højre':'Venstre'} hånd: ${t.n.name}${t.n.octave}. ${KEY_NAMES[p.key]}.${t.n.acc==='n'?' Opløsningstegnet ophæver det faste fortegn.':''}`,pieceId:p.id}));}
 function question(skill,level,r){let q;if(skill==='rhythm')q=makeRhythm(level,r);else if(skill==='interval')q=makeInterval(level,r);else if(skill==='passage'){const p=pick(PIECES.filter(p=>p.level<=level),r);q=pick(passageQuestions(p),r);}else q=makePitch(skill,level,r);if(!q.id){const text=JSON.stringify([q.score,q.target,q.type]);let hash=2166136261;for(let i=0;i<text.length;i++){hash^=text.charCodeAt(i);hash=Math.imul(hash,16777619);}q.id=skill+':'+(hash>>>0).toString(36);}return q;}
 function group(state,focus='mixed',seed=Date.now()){
@@ -94,5 +113,6 @@ function group(state,focus='mixed',seed=Date.now()){
  for(const s of skills){if(qs.length===5)break;let q;for(let i=0;i<20;i++){q=question(s,state.skills[s].level,r);if(!qs.some(x=>x.id===q.id))break;}qs.push(q);}return qs;
 }
 function validateScore(s){const errors=[];if(!KEYS[s.key])errors.push('Ukendt toneart');const expected=s.time?+s.time.split('/')[0]*4/(+s.time.split('/')[1]):null;s.measures.forEach((m,mi)=>{for(const clef of ['treble','bass']){const ns=m[clef]||[];if(expected&&ns.length&&Math.abs(ns.reduce((x,n)=>x+beats(n),0)-expected)>.0001)errors.push(`Takt ${mi+1}, ${clef}: forkert taktlængde`);ns.forEach(n=>{if(!n.rest&&(!LETTERS.includes(n.letter)||!Number.isInteger(n.octave)))errors.push('Ugyldig tone');});}});return errors;}
-return {LETTERS,NATURAL,KEYS,KEY_NAMES,SKILLS,DUR,LIMITS,PIECES,parse,rest,diatonic,fromDiatonic,staffStep,beats,spelling,pitchId,midi,resolveMeasure,resolveScore,targetNote,intervalNumber,durationLabel,beatLabel,median,newState,validState,record,rng,question,group,passageQuestions,pieceTargets,validateScore};
+return {pitches,LETTERS,NATURAL,KEYS,KEY_NAMES,SKILLS,DUR,LIMITS,PIECES,parse,rest,diatonic,fromDiatonic,staffStep,beats,spelling,pitchId,midi,resolveMeasure,resolveScore,targetNote,intervalNumber,durationLabel,beatLabel,median,newState,validState,record,rng,question,group,passageQuestions,pieceTargets,validateScore};
 });
+
