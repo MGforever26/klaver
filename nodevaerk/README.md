@@ -1,5 +1,21 @@
 # Nodeværk
 
+Version 5, 7. november 2026: otte reelle niveauer og udviklingsmålinger for præcision og svartid. Den separate klaverapp i repositoriets rod er uændret.
+
+## Ændringer i version 5
+
+- Hvert af de seks centrale områder kan nu nå niveau 8. Nye højere opgaver arbejder med længere sammenhængende passager, bredere register, større spring, 16.-dele, taktgrænser, bindebuer, akkorder og rytmisk samspil i både G- og F-nøgle.
+- På niveau 5 til 8 viser de længere passager tre til seks takter som kontekst og beder typisk om de sidste to takters toner. I samspilsopgaver sammenlignes anslagene i to eller tre takter, hvor den sidste er mål.
+- Fire selvstændige originale stykker i `advanced.js`, ét på hvert niveau 5 til 8, i 4/4, 3/4, 6/8 og 12/8. Stykker anbefales tæt på brugerens aktuelle niveau.
+- Appen registrerer nu spørgsmålstype, nøgle, sværhedsgrad, enheder og rå/normeret svartid på **nye** svar. Allerede gemte svar og fremskridt forbliver uændrede.
+- Under Fremskridt og efter øvegrupper sammenlignes otte tidlige og otte seneste svar af samme spørgsmålstype på samme niveau og i samme nøgle, når mindst 16 er til rådighed. Tidsmedian beregnes kun på korrekte svar, mens præcision bruger samtlige otte svar i hvert interval. Appen kan vise hurtigere svar sammen med flere fejl, forbedret præcision, langsommere svar eller omtrent stabil præstation. Dette er deskriptivt og ikke et kausalt eller statistisk signifikant bevis.
+- Opgaver med fysisk bankerytme eller egentligt klaverspil indgår ikke i svartidsanalysen. Tid pr. opgaveenhed er en grov normalisering, ikke et mål for faktisk spilletempo. Opgavetyper med for få sammenlignelige observationer vises ikke som trend.
+- Opgavernes genererede tonefølger behøver ikke være musikalsk idiomatiske for tonearten. Det er en bevidst prioritering af korrekt afkodning af de trykte fortegn og nodepositioner. Musikalsk sammenhæng trænes især i de originale og klassiske stykker.
+- Lokal lagring bruger fortsat `nodevaerk.progress.v1`, samme `version:1`-tilstand, backup, tidligere svar, niveauer, sessioner, reviews og gennemspilninger. Ændringer er additive. Data er kun på den enhed og i den browser-/hjemmeskærmskontekst, hvor de er indtastet. GitHub indeholder **ikke** en kopi af brugerens data.
+- Tests i `tests/advanced.test.cjs` kontrollerer niveauoprykning 4 til 8, mange tusinde opgaver, 24 tonearter, nodelæsning af flere takter, præcisionsændringer, historik og syntaks. Browserens visning er endnu ikke manuelt testet på fysisk iPhone.
+
+---
+
 Version 4 med bred toneartstræning, progression og tydelige næste skridt. Den originale klaverapp i repositoriets rod er uændret.
 
 ## Udvidelse 7. november 2026
