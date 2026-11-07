@@ -150,7 +150,12 @@ function addPractice(s,entry,now=Date.now()){
 }
 function nextPiece(s,pieces=E.PIECES){migrate(s);
  const level=Math.max(1,Math.min(s.skills.treble.level,s.skills.bass.level)),practiced=new Set(s.learning.practice.map(x=>x.pieceId));
- return pieces.find(p=>p.level<=level&&!practiced.has(p.id))||pieces.find(p=>p.level<=Math.min(E.MAX_LEVEL,level+1)&&!practiced.has(p.id))||pieces[0];
+ const candidates=pieces.filter(p=>!practiced.has(p.id));
+ candidates.sort((a,b)=>{
+  const cost=p=>Math.abs(p.level-level)+(p.level>level?.5:0);
+  return cost(a)-cost(b)||b.level-a.level;
+ });
+ return candidates[0]||pieces.find(p=>p.level===level)||pieces[0];
 }
 /* Progress is calculated from the same rolling ten answers as the
  * actual promotion rule in engine.record; no new level or stale estimate. */
