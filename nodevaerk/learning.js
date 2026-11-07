@@ -39,17 +39,25 @@ function sequenceQuestion(score,clef,skill,level,measureIndices=null){
  const indices=measureIndices||score.measures.map((_,i)=>i),resolved=E.resolveScore(score),tokens=[],labels=[],groups=[];
  for(const mi of indices){let count=0;for(const n of resolved[mi][clef])if(!n.rest&&!n.tied)for(const p of n.tones){tokens.push(p.id);labels.push(p.name);count++;}groups.push({measure:mi,count});}
  return identify({skill,level,type:'sequence',kind:'sequence',score,target:null,clef,groups,expectedTokens:tokens,units:tokens.length,
-  prompt:'Læs '+(indices.length>1?'begge takter':'hele takten')+' i '+(clef==='treble'?'højre':'venstre')+' hånd',
+  prompt:'Læs '+(indices.length>1?(indices.length===2&&score.measures.length>2?'takt '+(indices[0]+1)+' og '+(indices[1]+1):'de '+indices.length+' takter'):'hele takten')+' i '+(clef==='treble'?'højre':'venstre')+' hånd',
   detail:'Tilføj tonerne i rækkefølge. Spring pauser og toner, der er bundet fra den foregående tone, over. Akkorder læses nedefra.',
   answer:JSON.stringify(tokens),answerLabel:labels.join(' · '),explanation:labels.join(' · ')+'. Læs trin, spring og gentagelser fra venstre mod højre. En bindebue forlænger tonen uden nyt anslag.'});
 }
-function melodyQuestion(level,r,skill='passage',clef=null,tonality=null){clef=clef||pick(['treble','bass'],r);const score=C.buildScore(level,r,clef,level>=3?2:1,true,tonality);return sequenceQuestion(score,clef,skill,level);}
+function melodyQuestion(level,r,skill='passage',clef=null,tonality=null){
+ clef=clef||pick(['treble','bass'],r);
+ const count=level>=8?6:level>=7?5:level>=6?4:level>=5?3:level>=3?2:1;
+ const score=C.buildScore(level,r,clef,count,true,tonality);
+ const indices=level>=5?[count-2,count-1]:null;
+ const q=sequenceQuestion(score,clef,skill,level,indices);
+ if(level>=5)q.detail='Se først de forudgående takter som musikalsk sammenhæng. Læs derefter de to angivne takter nedefra og op ved akkorder, fra venstre mod højre i melodien. Spring pauser og bundne anslag over.';
+ return q;
+}
 function chordQuestion(level,r,requestedTonality=null){
  const clef=pick(['treble','bass'],r),t=C.selectTonality(level,r,requestedTonality),key=t.key,rootIndex=E.LETTERS.indexOf(t.tonic);
  const letter=pick([0,3,4],r);
  const rootLetter=E.LETTERS[(rootIndex+letter)%7],octave=clef==='bass'?2:4,root=E.diatonic(E.parse(rootLetter+octave));
- let pts=(level===1?[0,pick([2,4],r)]:level===4&&r()<.5?[0,2,4,6]:[0,2,4]).map(i=>E.fromDiatonic(root+i));
- const inversion=level>=3?Math.floor(r()*3):0;for(let i=0;i<inversion;i++){const first=pts.shift();pts.push({...first,octave:first.octave+1});}
+ let pts=(level===1?[0,pick([2,4],r)]:level>=7&&r()<.25?[0,2,4,6,8]:level>=4&&r()<.55?[0,2,4,6]:[0,2,4]).map(i=>E.fromDiatonic(root+i));
+ const inversion=level>=3?Math.floor(r()*Math.min(pts.length,level>=5?5:3)):0;for(let i=0;i<inversion;i++){const first=pts.shift();pts.push({...first,octave:first.octave+1});}pts.sort((a,b)=>E.diatonic(a)-E.diatonic(b));
  const n={...pts[0],duration:'w',chord:pts.slice(1)},score={key,tonality:t.id,time:'4/4',measures:[{treble:clef==='treble'?[n]:[E.rest('w')],bass:clef==='bass'?[n]:[E.rest('w')]}]};
  const q=sequenceQuestion(score,clef,'interval',level);q.kind='chord';q.prompt='Hvilke toner står i grebet?';q.detail='Læs alle tonerne nedefra og op. Tilføj én tone ad gangen.';q.target={measure:0,clef,index:0};q.explanation=q.answerLabel+'. Tonerne spilles samtidig. Se afstanden mellem dem som et samlet greb.';return identify(q);
 }
@@ -66,7 +74,14 @@ const TAP_PATTERNS={
  3:[['4/4','G4:8 G4:q G4:8 G4:q r:q'],['6/8','G4:8 r:8 G4:8 G4:q G4:8'],['12/8','G4:qd G4:q G4:8 G4:qd G4:qd'],['4/4','G4:q G4:q~ G4:q G4:q']],
  4:[['4/4','G4:16 G4:16 G4:8 G4:qd G4:8 G4:q'],['4/4','G4:8 G4:q~ G4:8 r:8 G4:8 G4:q'],['6/8','G4:16 G4:16 G4:8 G4:8 G4:qd'],['12/8','G4:q G4:8 G4:8 G4:q~ G4:qd G4:qd']]
 };
-function tapQuestion(level,r){const [time,line]=pick(TAP_PATTERNS[level],r),notes=parseLine(line),score={key:'C',time,measures:[{treble:notes,bass:[]}]};
+function tapQuestion(level,r){
+ if(level>=5){const score=C.buildScore(level,r,'treble',level>=7?2:1,false);
+  return identify({skill:'rhythm',level,type:'tap',kind:'tap',score,target:null,
+   prompt:'Bank rytmen over '+score.measures.length+' '+(score.measures.length===1?'takt':'takter'),
+   detail:'Læs alle varigheder og tæl underdelingerne. Bank ved nye anslag, også efter pauser. Bindebuer forlænger tonen uden nyt anslag.',
+   answer:'ok',answerLabel:'Rytmen ligger i pulsen',explanation:'Hør hovedslagene, og bevar pulsen gennem pauser og bindebuer.',units:4,tempo:level>=7?40:48});
+ }
+ const [time,line]=pick(TAP_PATTERNS[level],r),notes=parseLine(line),score={key:'C',time,measures:[{treble:notes,bass:[]}]};
  return identify({skill:'rhythm',level,type:'tap',kind:'tap',score,target:null,prompt:'Bank rytmen i takt',detail:'Læs først. Start optællingen, og bank kun ved nye anslag. Hold pulsen gennem pauser og bindebuer.',answer:'ok',answerLabel:'Rytmen ligger i pulsen',explanation:'Tæl underdelingerne, og lad pauserne få deres fulde plads.',units:4,tempo:level<=2?56:48});
 }
 function rhythmAdvanced(level,r){const q=tapQuestion(level,r);q.type='choice';q.kind='bar-rhythm';let at=0;const hits=[];for(const[nindex,n]of E.resolveScore(q.score)[0].treble.entries()){if(!n.rest&&!n.tied)hits.push({index:nindex,at});at+=n.beats;}const hit=pick(hits.slice(1).length?hits.slice(1):hits,r);q.target={measure:0,clef:'treble',index:hit.index};
@@ -77,11 +92,11 @@ function rhythmAdvanced(level,r){const q=tapQuestion(level,r);q.type='choice';q.
 function question(skill,level,r,requestedTonality=null){
  if(skill==='chords')return chordQuestion(level,r,requestedTonality);
  if(skill==='tap')return tapQuestion(level,r);
- if(skill==='passage')return r()<.25?C.together(level,r,requestedTonality):melodyQuestion(level,r,'passage',null,requestedTonality);
- if((skill==='treble'||skill==='bass')&&level>=2&&r()<.45)return melodyQuestion(level,r,skill,skill,requestedTonality);
- if(skill==='interval'&&level===4)return r()<.35?chordQuestion(level,r,requestedTonality):intervalQuality(level,r);
+ if(skill==='passage')return r()<(level>=5?.42:.25)?C.together(level,r,requestedTonality):melodyQuestion(level,r,'passage',null,requestedTonality);
+ if((skill==='treble'||skill==='bass')&&level>=2&&r()<(level>=5?.7:.45))return melodyQuestion(level,r,skill,skill,requestedTonality);
+ if(skill==='interval'&&level>=4)return r()<(level>=6?.5:.35)?chordQuestion(level,r,requestedTonality):intervalQuality(level,r);
  if(skill==='interval'&&level>=2&&r()<.25)return chordQuestion(level,r,requestedTonality);
- if(skill==='rhythm'&&level===4)return rhythmAdvanced(level,r);
+ if(skill==='rhythm'&&level>=4)return rhythmAdvanced(level,r);
  return previousQuestion(skill,level,r,requestedTonality);
 }
 function acceptsFocus(q,focus){return focus==='mixed'||focus==='review'||(focus==='chords'?q.kind==='chord':focus==='tap'?q.kind==='tap':q.skill===focus);}
@@ -133,7 +148,10 @@ function gradeTaps(q,taps,tempo){
 function addPractice(s,entry,now=Date.now()){
  migrate(s,now);const run={...entry,at:now,id:'play:'+now+':'+s.learning.practice.length};s.learning.practice.push(run);return run;
 }
-function nextPiece(s,pieces=E.PIECES){migrate(s);const level=Math.max(1,Math.min(s.skills.treble.level,s.skills.bass.level));const practiced=new Set(s.learning.practice.map(x=>x.pieceId));return pieces.find(p=>p.level<=level&&!practiced.has(p.id))||pieces.find(p=>p.level<=Math.min(4,level+1)&&!practiced.has(p.id))||pieces[0];}
+function nextPiece(s,pieces=E.PIECES){migrate(s);
+ const level=Math.max(1,Math.min(s.skills.treble.level,s.skills.bass.level)),practiced=new Set(s.learning.practice.map(x=>x.pieceId));
+ return pieces.find(p=>p.level<=level&&!practiced.has(p.id))||pieces.find(p=>p.level<=Math.min(E.MAX_LEVEL,level+1)&&!practiced.has(p.id))||pieces[0];
+}
 /* Progress is calculated from the same rolling ten answers as the
  * actual promotion rule in engine.record; no new level or stale estimate. */
 function readiness(s,skill){
