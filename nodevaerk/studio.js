@@ -76,6 +76,12 @@ progress=function(){oldProgress();L.migrate(state);
  (missing.length?'<p class="subtle">Endnu ikke registreret, blandt andre: '+esc(missing.join(', '))+'.</p>':'<p class="subtle">Du har mødt alle 24 tonearter. Nu handler det om sikker læsning og gentagelse.</p>')+
  '<p class="subtle">At have mødt en toneart betyder, at du har besvaret mindst én opgave i den. Det er ikke det samme som at mestre den. Dine tidligere resultater er bevaret.</p>';
  if(skillCard)skillCard.after(coverageCard);else main.appendChild(coverageCard);
+ const trends=L.performanceTrends(state),trendSection=document.createElement('section');
+ trendSection.className='card trend-card';
+ trendSection.innerHTML='<div class="eyebrow">Sammenlignelige opgaver</div><h2>Din hastighed og sikkerhed</h2>'+
+ (trends.length?trends.slice(0,6).map(trendMarkup).join(''):'<p>Efter mindst 16 opgaver af samme type på samme niveau kan appen sammenligne dine otte tidlige og otte seneste svar. Dine nye svar bliver registreret automatisk.</p>')+
+ '<p class="subtle">Vi sammenligner kun samme opgavetype på samme niveau. Svartiden normaliseres efter antallet af afkodede enheder. Kun korrekte svar bruges til tidsmedianen, alle otte til præcisionen. Små ændringer kan skyldes tilfældig variation. Bankerytmer og dit fysiske klaverspil indgår ikke i denne tidsmåling.</p>';
+ coverageCard.after(trendSection);
  const section=document.createElement('section');section.className='card';const runs=state.learning.practice;section.innerHTML='<h2 style="font-size:19px">Ved klaveret</h2><p class="practice-count">'+runs.length+' gemte gennemspilninger · '+new Set(runs.map(r=>r.pieceId)).size+' forskellige stykker</p>'+runs.slice(-5).reverse().map(r=>{const p=E.PIECES.find(p=>p.id===r.pieceId);return '<div class="review-row"><strong>'+esc(p?.title||r.pieceId)+'</strong><p>Takt '+(r.start+1)+' til '+r.end+' · '+r.tempo+' BPM · '+({flow:'Holdt pulsen',notes:'Toner',rhythm:'Rytme',hands:'Hænder'}[r.rating]||r.rating)+'</p></div>';}).join('')+'<p class="subtle">Egne vurderinger holdes adskilt fra læseopgavernes resultater.</p>';APP.querySelector('main').appendChild(section);
  const due=L.dueReviews(state).length,scheduled=Object.keys(state.learning.reviews).length;const note=document.createElement('p');note.className='storage-note';note.textContent=due+' områder er klar til genbesøg. '+scheduled+' områder følges med gentagelser over flere dage.';section.after(note);
 };
