@@ -126,3 +126,14 @@ test('All shipped browser source files parse and retain the same storage key',()
  const sw=fs.readFileSync(path.resolve(__dirname,'../sw.js'),'utf8');
  assert.match(sw,/curriculum\.js/);assert.match(sw,/learning\.js/);
 });
+
+test('Every introduced printed key signature is accepted by the notation engine',()=>{
+ const VF=require('vexflow').Flow;
+ for(const t of C.TONALITIES){
+  for(const clef of ['treble','bass']){
+   const stave=new VF.Stave(0,0,550).addClef(clef);
+   assert.doesNotThrow(()=>stave.addKeySignature(t.key),t.id+' '+clef);
+   assert.ok(stave.getNoteStartX()>0,t.id+' '+clef);
+  }
+ }
+});
