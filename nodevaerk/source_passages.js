@@ -25,7 +25,7 @@ const specs=[
     "measures": [
       {
         "treble": "A4:q B4:q Cn5:q",
-        "bass": "A1:q A3+Cn4+E4:h"
+        "bass": "A2:q A3+Cn4+E4:h"
       },
       {
         "treble": "E5:q D5:q B4:q",
@@ -580,6 +580,9 @@ specs.push(...[
     ]
   }
 ]);
+// Gymnopédie uses the H-mol key signature (two sharps, shared with D-dur).
+for(const p of specs)if(p.workId==='satie-gymno')p.tonality='Bm';
+for(const p of E.PIECES)if(p.workId==='satie-gymno')p.tonality='Bm';
 const added=specs.map(L.fromSpec);
 for(const p of added){
  const errors=L.validateScore(p);
