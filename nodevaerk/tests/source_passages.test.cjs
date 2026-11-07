@@ -70,6 +70,18 @@ test('The same work has multiple non-identical note passages',()=>{
  }
 });
 
+test('Für Elise plays at the right length and advances its 3/8 highlight every bar',()=>{
+ const p=E.PIECES.find(x=>x.id==='beethoven-furelise-t1-4');
+ const audio=L.studioPlaybackPlan(p,'both',60,0,p.measures.length);
+ assert.equal(audio.barSeconds,1.5);
+ assert.equal(audio.totalSeconds,6);
+ assert.ok(audio.events.some(e=>e.startSeconds>=4.5));
+ const studio=fs.readFileSync(path.join(__dirname,'../studio.js'),'utf8');
+ assert.match(studio,/relatedPassagesMarkup\(p\)/);
+ assert.match(studio,/id="catalog-work"/);
+ assert.match(studio,/function workOptions\(/);
+});
+
 test('The new score module runs before app start and is available offline',()=>{
  const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
  assert.ok(html.indexOf('advanced.js')<html.indexOf('source_passages.js'));
