@@ -1,0 +1,297 @@
+/* Public-domain passages verified against the named Mutopia source editions.
+ * These are distinct windows, not copies of the already shipped excerpts. */
+(function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory(require('./engine.js'),require('./learning.js'),require('./advanced.js'));else factory(root.NV,root.NV.learning);})(typeof globalThis!=='undefined'?globalThis:this,function(E,L){
+'use strict';
+const groups=[["satie-gymno","Gymnopédie nr. 1","satie-gymno-"],["burgmuller-arabesque","Arabesque","burgmuller-arabesque-"],["mozart-k2","Mozart K. 2","mozart-k2-"],["petzold-menuet","Menuet i G","petzold-menuet-"]];
+for(const p of E.PIECES){for(const [id,name,prefix] of groups)if(p.id.startsWith(prefix)){p.workId=id;p.workName=name;}}
+const specs=[
+  {
+    "id": "satie-gymno-t22-25",
+    "title": "Gymnopédie · Ny frase",
+    "subtitle": "Takt 22–25 · Melodi med løse fortegn",
+    "level": 4,
+    "key": "D",
+    "time": "3/4",
+    "tip": "C er nu sænket til C-natural flere steder. Find melodien i højre hånd før du samler hænderne.",
+    "workId": "satie-gymno",
+    "collection": "klassisk",
+    "composer": "Erik Satie",
+    "source": {
+      "url": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=37",
+      "title": "Gymnopédie · Ny frase, Takt 22–25",
+      "license": "Public Domain",
+      "adaptation": "Toner og varigheder transskriberet fra den frit anvendelige Mutopia-nodeudgave. Bas og mellemstemme er samlet i venstre hånd, hvor stemmerne overlapper. Meloditoner og løse fortegn er bevaret; fingersætning, dynamik, frasering og forsiringer er udeladt."
+    },
+    "measures": [
+      {
+        "treble": "A4:q B4:q Cn5:q",
+        "bass": "A1:q A3+Cn4+E4:h"
+      },
+      {
+        "treble": "E5:q D5:q B4:q",
+        "bass": "D2:q G3+B3+E4:h"
+      },
+      {
+        "treble": "D5:q Cn5:q B4:q",
+        "bass": "D2:q D3+G3+B3+E4:h"
+      },
+      {
+        "treble": "D5:hd",
+        "bass": "D2:q Cn3+E3+A3+D4:h"
+      }
+    ]
+  },
+  {
+    "id": "satie-gymno-t26-29",
+    "title": "Gymnopédie · Kromatiske bevægelser",
+    "subtitle": "Takt 26–29 · F og C sænkes igen",
+    "level": 4,
+    "key": "D",
+    "time": "3/4",
+    "tip": "Se efter opløsningstegnene foran F og C. Højre hånd bevæger sig gradvist op og falder tilbage.",
+    "workId": "satie-gymno",
+    "collection": "klassisk",
+    "composer": "Erik Satie",
+    "source": {
+      "url": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=37",
+      "title": "Gymnopédie · Kromatiske bevægelser, Takt 26–29",
+      "license": "Public Domain",
+      "adaptation": "Toner og varigheder transskriberet fra den frit anvendelige Mutopia-nodeudgave. Bas og mellemstemme er samlet i venstre hånd, hvor stemmerne overlapper. Meloditoner og løse fortegn er bevaret; fingersætning, dynamik, frasering og forsiringer er udeladt."
+    },
+    "measures": [
+      {
+        "treble": "D5:h D5:q",
+        "bass": "D2:q Cn3+F3+A3+D4:h"
+      },
+      {
+        "treble": "E5:q Fn5:q G5:q",
+        "bass": "D2:q A3+Cn4+Fn4:h"
+      },
+      {
+        "treble": "A5:q Cn5:q D5:q",
+        "bass": "D2:q A3+Cn4+E4:h"
+      },
+      {
+        "treble": "E5:q D5:q B4:q",
+        "bass": "D2:q D3+G3+B3+E4:h"
+      }
+    ]
+  },
+  {
+    "id": "satie-gymno-t30-33",
+    "title": "Gymnopédie · Mod første afslutning",
+    "subtitle": "Takt 30–33 · Lange toner over skiftende bas",
+    "level": 4,
+    "key": "D",
+    "time": "3/4",
+    "tip": "Hold de lange toner i højre hånd. Bassens akkorder skifter, selv når melodien står stille.",
+    "workId": "satie-gymno",
+    "collection": "klassisk",
+    "composer": "Erik Satie",
+    "source": {
+      "url": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=37",
+      "title": "Gymnopédie · Mod første afslutning, Takt 30–33",
+      "license": "Public Domain",
+      "adaptation": "Toner og varigheder transskriberet fra den frit anvendelige Mutopia-nodeudgave. Bas og mellemstemme er samlet i venstre hånd, hvor stemmerne overlapper. Meloditoner og løse fortegn er bevaret; fingersætning, dynamik, frasering og forsiringer er udeladt."
+    },
+    "measures": [
+      {
+        "treble": "D5:hd",
+        "bass": "D2:q Cn3+E3+A3+D4:h"
+      },
+      {
+        "treble": "D5:h D5:q",
+        "bass": "D2:q Cn3+F3+A3+D4:h"
+      },
+      {
+        "treble": "G5:hd",
+        "bass": "E2:q B3+E4+G4:h"
+      },
+      {
+        "treble": "F5:hd",
+        "bass": "F2:q A3+C4+F4:h"
+      }
+    ]
+  },
+  {
+    "id": "satie-gymno-t34-37",
+    "title": "Gymnopédie · Første afslutning",
+    "subtitle": "Takt 34–37 · Fra lille frase til skiftende akkorder",
+    "level": 5,
+    "key": "D",
+    "time": "3/4",
+    "tip": "Højre hånd bevæger sig i små trin; venstre hånd skal skifte fra bas til akkord med rolige, præcise spring.",
+    "workId": "satie-gymno",
+    "collection": "klassisk",
+    "composer": "Erik Satie",
+    "source": {
+      "url": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=37",
+      "title": "Gymnopédie · Første afslutning, Takt 34–37",
+      "license": "Public Domain",
+      "adaptation": "Toner og varigheder transskriberet fra den frit anvendelige Mutopia-nodeudgave. Bas og mellemstemme er samlet i venstre hånd, hvor stemmerne overlapper. Meloditoner og løse fortegn er bevaret; fingersætning, dynamik, frasering og forsiringer er udeladt."
+    },
+    "measures": [
+      {
+        "treble": "B4:q A4:q B4:q",
+        "bass": "B1:q B3+D4+F4:h"
+      },
+      {
+        "treble": "C5:q D5:q E5:q",
+        "bass": "E2:q C4+E4+A4:h"
+      },
+      {
+        "treble": "C5:q D5:q E5:q",
+        "bass": "E2:q A3+C4+F4+A4:h"
+      },
+      {
+        "treble": "F4:hd",
+        "bass": "E2:q A3+D4:q B3+D4+G4:q"
+      }
+    ]
+  },
+  {
+    "id": "petzold-menuet-t9-12",
+    "title": "Menuet i G · Ny frase",
+    "subtitle": "Takt 9–12 · Første tema vender tilbage",
+    "level": 3,
+    "key": "G",
+    "time": "3/4",
+    "tip": "Se, at de første to takter kendes fra åbningen; tredje og fjerde takt giver dem en ny fortsættelse.",
+    "workId": "petzold-menuet",
+    "collection": "klassisk",
+    "composer": "Christian Petzold (tilskrevet)",
+    "source": {
+      "url": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=75",
+      "title": "Menuet i G · Ny frase, Takt 9–12",
+      "license": "Public Domain",
+      "adaptation": "Toner og varigheder transskriberet fra den frit anvendelige Mutopia-nodeudgave. Bas og mellemstemme er samlet i venstre hånd, hvor stemmerne overlapper. Meloditoner og løse fortegn er bevaret; fingersætning, dynamik, frasering og forsiringer er udeladt."
+    },
+    "measures": [
+      {
+        "treble": "D5:q G4:8 A4:8 B4:8 C5:8",
+        "bass": "B3:h A3:q"
+      },
+      {
+        "treble": "D5:q G4:q G4:q",
+        "bass": "G3:q B3:q G3:q"
+      },
+      {
+        "treble": "E5:q C5:8 D5:8 E5:8 F5:8",
+        "bass": "C4:hd"
+      },
+      {
+        "treble": "G5:q G4:q G4:q",
+        "bass": "B3:q C4:8 B3:8 A3:8 G3:8"
+      }
+    ]
+  },
+  {
+    "id": "petzold-menuet-t13-16",
+    "title": "Menuet i G · Første dels kadence",
+    "subtitle": "Takt 13–16 · Faldende bevægelser",
+    "level": 3,
+    "key": "G",
+    "time": "3/4",
+    "tip": "Læs først den faldende bevægelse i højre hånd og find basgangen i de sidste to takter.",
+    "workId": "petzold-menuet",
+    "collection": "klassisk",
+    "composer": "Christian Petzold (tilskrevet)",
+    "source": {
+      "url": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=75",
+      "title": "Menuet i G · Første dels kadence, Takt 13–16",
+      "license": "Public Domain",
+      "adaptation": "Toner og varigheder transskriberet fra den frit anvendelige Mutopia-nodeudgave. Bas og mellemstemme er samlet i venstre hånd, hvor stemmerne overlapper. Meloditoner og løse fortegn er bevaret; fingersætning, dynamik, frasering og forsiringer er udeladt."
+    },
+    "measures": [
+      {
+        "treble": "C5:q D5:8 C5:8 B4:8 A4:8",
+        "bass": "A3:h F3:q"
+      },
+      {
+        "treble": "B4:q C5:8 B4:8 A4:8 G4:8",
+        "bass": "G3:h B3:q"
+      },
+      {
+        "treble": "A4:q B4:8 A4:8 G4:8 F4:8",
+        "bass": "C4:q D4:q D3:q"
+      },
+      {
+        "treble": "G4:hd",
+        "bass": "G3:h G2:q"
+      }
+    ]
+  },
+  {
+    "id": "petzold-menuet-t21-24",
+    "title": "Menuet i G · Sekvens opad",
+    "subtitle": "Takt 21–24 · Ottendedele og basvending",
+    "level": 4,
+    "key": "G",
+    "time": "3/4",
+    "tip": "Takt 21 har seks ottendedele i træk. Hold øje med Cis og H i næste takter.",
+    "workId": "petzold-menuet",
+    "collection": "klassisk",
+    "composer": "Christian Petzold (tilskrevet)",
+    "source": {
+      "url": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=75",
+      "title": "Menuet i G · Sekvens opad, Takt 21–24",
+      "license": "Public Domain",
+      "adaptation": "Toner og varigheder transskriberet fra den frit anvendelige Mutopia-nodeudgave. Bas og mellemstemme er samlet i venstre hånd, hvor stemmerne overlapper. Meloditoner og løse fortegn er bevaret; fingersætning, dynamik, frasering og forsiringer er udeladt."
+    },
+    "measures": [
+      {
+        "treble": "A4:8 B4:8 C#5:8 D5:8 E5:8 F5:8",
+        "bass": "A3:hd"
+      },
+      {
+        "treble": "G5:q F5:q E5:q",
+        "bass": "B3:q D4:q C#4:q"
+      },
+      {
+        "treble": "F5:q A4:q C#5:q",
+        "bass": "D4:q F3:q A3:q"
+      },
+      {
+        "treble": "D5:hd",
+        "bass": "D4:q D3:q Cn4:q"
+      }
+    ]
+  },
+  {
+    "id": "mozart-k2-t5-6",
+    "title": "Mozart K. 2 · To små spejlfraser",
+    "subtitle": "Takt 5–6 · Fra C–E–G til C–F–A",
+    "level": 2,
+    "key": "F",
+    "time": "3/4",
+    "tip": "Sammenlign de to takter: første starter med C–E, anden med C–F. De lange bastoner giver ro til læsningen.",
+    "workId": "mozart-k2",
+    "collection": "klassisk",
+    "composer": "W. A. Mozart",
+    "source": {
+      "url": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1770",
+      "title": "Mozart K. 2 · To små spejlfraser, Takt 5–6",
+      "license": "Public Domain",
+      "adaptation": "Toner og varigheder transskriberet fra den frit anvendelige Mutopia-nodeudgave. Bas og mellemstemme er samlet i venstre hånd, hvor stemmerne overlapper. Meloditoner og løse fortegn er bevaret; fingersætning, dynamik, frasering og forsiringer er udeladt."
+    },
+    "measures": [
+      {
+        "treble": "C4:8 E4:8 G4:q G4:q",
+        "bass": "C3:hd"
+      },
+      {
+        "treble": "C4:8 F4:8 A4:q A4:q",
+        "bass": "C3:hd"
+      }
+    ]
+  }
+];
+const added=specs.map(L.fromSpec);
+for(const p of added){
+ const errors=L.validateScore(p);
+ if(errors.length)throw Error(p.id+': '+errors.join('; '));
+ p.workName=groups.find(g=>g[0]===p.workId)?.[1];
+ if(!E.PIECES.some(x=>x.id===p.id))E.PIECES.push(p);
+}
+return added;
+});
