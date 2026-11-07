@@ -136,6 +136,19 @@ function timeline(score,hand='both',start=0,end=score.measures.length){
  }offset+=pulseInfo(score.time).beats;}
  return {events,duration:offset};
 }
+/* Pure playback scheduling: no metronome or count-in. Tempo is in
+ * quarter notes for simple time, dotted quarters for compound time. */
+function studioPlaybackPlan(score,hand,tempo,start,end){
+ if(!Number.isFinite(tempo)||tempo<=0||!Number.isInteger(start)||!Number.isInteger(end)||start<0||end<=start||end>score.measures.length)throw Error('Ugyldigt lydudsnit');
+ if(!['both','treble','bass'].includes(hand))throw Error('Ugyldigt valg af hånd');
+ const info=pulseInfo(score.time),period=60/tempo,secondsPerQuarter=period/info.pulse;
+ const sequence=timeline(score,hand,start,end);
+ return {
+  barSeconds:info.pulses*period,
+  totalSeconds:sequence.duration*secondsPerQuarter,
+  events:sequence.events.map(e=>({...e,startSeconds:e.at*secondsPerQuarter,durationSeconds:e.duration*secondsPerQuarter}))
+ };
+}
 function tapTargets(q){let at=0;return E.resolveScore(q.score).flatMap(m=>m.treble.map(n=>{const value=!n.rest&&!n.tied?at:null;at+=n.beats;return value;})).filter(v=>v!==null);}
 function gradeTaps(q,taps,tempo){
  const pulse=pulseInfo(q.score.time).pulse,unitMs=60000/tempo/pulse,expected=tapTargets(q).map(t=>t*unitMs),tolerance=Math.max(85,Math.min(180,unitMs*.2));
@@ -260,5 +273,5 @@ function nextGuidance(s,entries=[],now=Date.now()){
 }
 
 E.question=question;E.group=group;E.record=record;E.passageQuestions=passageQuestions;E.validateScore=validateScore;
-return {DAY,INTERVAL_DAYS,parseLine,fromSpec,validateScore,concept,migrate,dueReviews,question,group,record,sequenceQuestion,melodyQuestion,chordQuestion,intervalQuality,tapQuestion,gradeTaps,tapTargets,pulseInfo,timeline,addPractice,nextPiece,localDay,route,markRoute,nextGuidance,readiness,keyCoverage,performanceTrends,taskKind};
+return {DAY,INTERVAL_DAYS,parseLine,fromSpec,validateScore,concept,migrate,dueReviews,question,group,record,sequenceQuestion,melodyQuestion,chordQuestion,intervalQuality,tapQuestion,gradeTaps,tapTargets,pulseInfo,timeline,studioPlaybackPlan,addPractice,nextPiece,localDay,route,markRoute,nextGuidance,readiness,keyCoverage,performanceTrends,taskKind};
 });
