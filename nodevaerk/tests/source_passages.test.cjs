@@ -92,6 +92,15 @@ test('Mozarts Turkish March retains the characteristic note figures and two-beat
  assert.equal(L.studioPlaybackPlan(p,'both',60,0,4).totalSeconds,8);
 });
 
+test('At level 3, the next studio recommendation favours a real musical excerpt',()=>{
+ const state=E.newState();
+ state.skills.treble.level=3;state.skills.bass.level=3;
+ const chosen=L.nextPiece(state);
+ assert.equal(chosen.collection,'klassisk');
+ assert.ok(chosen.workId);
+ assert.ok(E.PIECES.find(p=>p.id===chosen.id));
+});
+
 test('The new score module runs before app start and is available offline',()=>{
  const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
  assert.ok(html.indexOf('advanced.js')<html.indexOf('source_passages.js'));
