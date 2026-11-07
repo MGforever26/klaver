@@ -115,7 +115,7 @@ function barNotes(level,r,skill='passage',clefOverride=null,tonality=null){
  const correct=noteNames(score,targetMeasure,clef).join(' · ');
  const alternatives=alternativeNames(score,targetMeasure,clef,r);
  const c=choices(correct,alternatives,r);
- const q={skill,level,type:'choice',score,target:null,kind:'bar-notes',
+ const q={skill,level,type:'choice',score,target:null,kind:'bar-notes',clef,
   prompt:'Hvilken tonerække står i '+(clef==='treble'?'højre':'venstre')+' hånd i takt '+(targetMeasure+1)+'?',
   detail:'Læs hele takten fra venstre mod højre. Medtag kun toner, der anslås. Læg mærke til tonearten og eventuelle pauser.',
   answer:c.answer,answerLabel:correct,options:c.options,
