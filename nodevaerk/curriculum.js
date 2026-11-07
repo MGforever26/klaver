@@ -140,20 +140,29 @@ function rhythmBar(level,r,tonality=null){
 }
 function together(level,r,requestedTonality=null){
  const meter=level<=1?'4/4':meterFor(level,r);const tonality=selectTonality(level,r,requestedTonality),key=tonality.key;
- const treblePattern=meter==='12/8'?['q','8','q','8','q','8','q','8']:meter==='6/8'?['8','8','8','8','8','8']:meter==='3/4'?['q','q','q']:meter==='2/4'?['8','8','q']:['q','q','q','q'];
+ const treblePattern=level>=5?patternFor(meter,level,r):meter==='12/8'?['q','8','q','8','q','8','q','8']:meter==='6/8'?['8','8','8','8','8','8']:meter==='3/4'?['q','q','q']:meter==='2/4'?['8','8','q']:['q','q','q','q'];
  const bassAlternatives=meter==='12/8'?[['qd','qd','qd','qd'],['q','8','qd','qd','qd'],['qd','q','8','qd','qd']]:meter==='6/8'?[['qd','qd'],['q','8','qd'],['qd','q','8']]:meter==='3/4'?[['q','h'],['h','q'],['q','q','q']]:meter==='2/4'?[['q','q'],['h']]:[['h','h'],['q','h','q'],['h','q','q']];
- const bassPattern=pick(bassAlternatives,r);const score={key,tonality:tonality.id,time:meter,measures:[{treble:makeLine(treblePattern,'treble',level,r,tonality),bass:makeLine(bassPattern,'bass',level,r,tonality)}]};
+ const count=level>=7?3:level>=5?2:1,measures=[];
+ for(let i=0;i<count;i++){
+  const top=i===0?treblePattern:level>=5?patternFor(meter,level,r):treblePattern;
+  const bottom=i===0?pick(bassAlternatives,r):pick(bassAlternatives,r);
+  const treble=makeLine(top,'treble',level,r,tonality),bass=makeLine(bottom,'bass',level,r,tonality);
+  if(level>=6)for(const n of bass)if(!n.rest&&r()<.35){const x=E.diatonic(n);n.chord=[E.fromDiatonic(x+2),E.fromDiatonic(x+4)];}
+  measures.push({treble,bass});
+ }
+ const score={key,tonality:tonality.id,time:meter,measures};
+ const targetMeasure=count-1;
  if(E.validateScore(score).length)throw Error('Ugyldig samspilstakt');
- const t=noteOnsets(score.measures[0].treble).map(x=>x.at),b=noteOnsets(score.measures[0].bass).map(x=>x.at);
+ const t=noteOnsets(score.measures[targetMeasure].treble).map(x=>x.at),b=noteOnsets(score.measures[targetMeasure].bass).map(x=>x.at);
  const hits=b.filter(x=>t.some(y=>Math.abs(x-y)<.0001));const correct=hits.map(v=>momentLabel(v,meter)).join(' og ');
  const candidates=bassAlternatives.map(p=>{let at=0;return p.map(s=>{const val=at;at+=E.beats(parseDuration(s));return val;}).filter(v=>t.includes(v)).map(v=>momentLabel(v,meter)).join(' og ');}).filter(x=>x!==correct);
  const otherMoments=Array.from({length:Math.round(meterBeats(meter)*2)},(_,i)=>momentLabel(i/2,meter));for(let i=0;i<otherMoments.length;i++)for(let j=i;j<otherMoments.length;j++)candidates.push(otherMoments.slice(i,j+1).join(' og '));
  const c=choices(correct,shuffle([...new Set(candidates)],r),r);
  const q={skill:'passage',level,type:'choice',kind:'two-hands',score,target:null,
-  prompt:meter==='6/8'||meter==='12/8'?'På hvilke ottendedelspladser anslår begge hænder en tone samtidig?':'På hvilke slag begynder begge hænder en tone samtidig?',
+  prompt:(meter==='6/8'||meter==='12/8'?'På hvilke ottendedelspladser':'På hvilke slag')+' anslår begge hænder samtidig i takt '+(targetMeasure+1)+'?',
   detail:meter==='12/8'?'Tæl fire hovedslag, hver med tre ottendedele: 1-2-3, 4-5-6, 7-8-9, 10-11-12. Kun nye anslag tæller.':meter==='6/8'?'Tæl ottendedelene 1-2-3, 4-5-6. En tone, som stadig holdes, tæller ikke som et nyt anslag.':'Følg begge systemer fra venstre mod højre. Kun nye anslag tæller, ikke toner der holdes.',
   answer:c.answer,answerLabel:correct,options:c.options,
-  explanation:'Begge hænder anslår en ny tone på '+correct+'. Følg de to stemmer efter slagene, ikke efter nodehovederne alene.'};
+  explanation:'I takt '+(targetMeasure+1)+' anslår begge hænder en ny tone på '+correct+'. Følg de to stemmer efter slagene, ikke efter nodehovederne alene.'};
  return keyed(q);
 }
 function rekeyQuestion(q,tonality){
