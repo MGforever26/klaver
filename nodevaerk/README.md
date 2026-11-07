@@ -2,6 +2,13 @@
 
 Version 5, 7. november 2026: otte reelle niveauer og udviklingsmålinger for præcision og svartid. Den separate klaverapp i repositoriets rod er uændret.
 
+## Lydrettelse i version 5.0.1
+
+- Play under "Ved klaveret" afspiller nu tonerne i det valgte taktudsnit i valgt tempo og med valgte hænder. Stop afbryder.
+- Der er ingen optælling eller metronom ved denne afspilning. "Bank rytmen" beholder sin egen optælling til rytmetræning.
+- Appens lokale datanøgle, tidligere svar, aktive niveauer og øvrig progression ændres ikke.
+- Automatiske tests kontrollerer afspilningsplan og varigheder i 3/4, 4/4, 6/8 og 12/8, akkorder, håndvalg og valgte takter. En fysisk iPhone er endnu ikke manuelt testet.
+
 ## Ændringer i version 5
 
 - Hvert af de seks centrale områder kan nu nå niveau 8. Nye højere opgaver arbejder med længere sammenhængende passager, bredere register, større spring, 16.-dele, taktgrænser, bindebuer, akkorder og rytmisk samspil i både G- og F-nøgle.
