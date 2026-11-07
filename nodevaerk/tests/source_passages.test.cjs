@@ -15,12 +15,13 @@ const groups={
  'mozart-k2':6,
  'petzold-menuet':8,
  'beethoven-furelise':2,
- 'chopin-prelude28-4':2
+ 'chopin-prelude28-4':2,
+ 'mozart-turkish':2
 };
 
-test('Six works have 28 separate public-domain excerpts and stable names',()=>{
- assert.equal(added.length,16);
- assert.equal(E.PIECES.length,62);
+test('Seven works have 30 separate public-domain excerpts and stable names',()=>{
+ assert.equal(added.length,18);
+ assert.equal(E.PIECES.length,64);
  assert.equal(new Set(E.PIECES.map(p=>p.id)).size,E.PIECES.length);
  for(const [workId,count] of Object.entries(groups)){
   const pieces=E.PIECES.filter(p=>p.workId===workId);
@@ -64,7 +65,7 @@ test('Satie, Beethoven and Chopin samples preserve the critical accidentals',()=
 });
 
 test('The same work has multiple non-identical note passages',()=>{
- for(const workId of ['satie-gymno','petzold-menuet','mozart-k2','beethoven-furelise','chopin-prelude28-4']){
+ for(const workId of ['satie-gymno','petzold-menuet','mozart-k2','beethoven-furelise','chopin-prelude28-4','mozart-turkish']){
   const pieces=E.PIECES.filter(p=>p.workId===workId),melodies=pieces.map(p=>E.resolveScore(p).flatMap(m=>m.treble.flatMap(n=>n.rest?[]:n.tones.map(t=>t.midi))).join(','));
   assert.ok(new Set(melodies).size>1,workId);
  }
@@ -80,6 +81,15 @@ test('Für Elise plays at the right length and advances its 3/8 highlight every 
  assert.match(studio,/relatedPassagesMarkup\(p\)/);
  assert.match(studio,/id="catalog-work"/);
  assert.match(studio,/function workOptions\(/);
+});
+
+test('Mozarts Turkish March retains the characteristic note figures and two-beat bars',()=>{
+ const p=E.PIECES.find(p=>p.id==='mozart-turkish-t1-4');
+ assert.equal(p.key,'Am');assert.equal(p.time,'2/4');
+ assert.deepEqual(E.resolveScore(p)[0].treble.filter(n=>!n.rest).map(n=>n.midi),[72,74,72,71,72]);
+ const q=E.PIECES.find(p=>p.id==='mozart-turkish-t5-7');
+ assert.deepEqual(E.resolveScore(q)[0].treble[1].tones.map(n=>n.midi),[78,81]);
+ assert.equal(L.studioPlaybackPlan(p,'both',60,0,4).totalSeconds,8);
 });
 
 test('The new score module runs before app start and is available offline',()=>{
