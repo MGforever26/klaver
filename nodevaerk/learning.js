@@ -134,6 +134,29 @@ function addPractice(s,entry,now=Date.now()){
  migrate(s,now);const run={...entry,at:now,id:'play:'+now+':'+s.learning.practice.length};s.learning.practice.push(run);return run;
 }
 function nextPiece(s,pieces=E.PIECES){migrate(s);const level=Math.max(1,Math.min(s.skills.treble.level,s.skills.bass.level));const practiced=new Set(s.learning.practice.map(x=>x.pieceId));return pieces.find(p=>p.level<=level&&!practiced.has(p.id))||pieces.find(p=>p.level<=Math.min(4,level+1)&&!practiced.has(p.id))||pieces[0];}
+/* Progress is calculated from the same rolling ten answers as the
+ * actual promotion rule in engine.record; no new level or stale estimate. */
+function readiness(s,skill){
+ const record=s.skills?.[skill],level=record?.level||1,maxLevel=4;
+ const attempts=(record?.window||[]).filter(a=>a.level===level).slice(-10);
+ const answered=attempts.length,correct=attempts.filter(a=>a.correct).length;
+ const speeds=attempts.filter(a=>a.correct).map(a=>Number.isFinite(a.equivalentMs)?a.equivalentMs:a.ms);
+ const speed=E.median(speeds),limit=E.LIMITS[skill];
+ const more=Math.max(0,10-answered),missing=Math.max(0,9-correct);
+ const speedReady=speed!==null&&speed<=limit;
+ let status;
+ if(level===maxLevel)status='Højeste nuværende niveau. Målet er større sikkerhed og flere tonearter.';
+ else if(answered<10)status='Du mangler '+more+' '+(more===1?'svar':'svar')+' til den første fulde vurdering på dette niveau.';
+ else if(correct<9)status='Du skal op på mindst 9 rigtige blandt de seneste 10 svar. Nye svar erstatter de ældste.';
+ else if(!speedReady)status='Præcisionen er på plads. Nu skal du læse hurtigere uden at miste sikkerhed.';
+ else status='Kravene er opfyldt. Niveauet justeres ved næste registrerede svar.';
+ return {skill,level,maxLevel,answered,correct,more,missing,medianMs:speed,limitMs:limit,speedReady,status,complete:level===maxLevel,answerProgress:Math.round(answered*10)};
+}
+function keyCoverage(s){
+ const ids=new Set(C.TONALITIES.map(t=>t.id)),seen=new Set();
+ for(const a of s.attempts||[])if(a.tonality&&ids.has(a.tonality))seen.add(a.tonality);
+ return {total:C.TONALITIES.length,seen:[...seen],count:seen.size,remaining:C.TONALITIES.filter(t=>!seen.has(t.id)).map(t=>t.id)};
+}
 /* Lightweight day path. Stored as an additive v3 learning field:
  * existing scores, sessions, reviews and the v1 localStorage key are intact. */
 function localDay(now=Date.now()){return new Date(now).toLocaleDateString('sv-SE',{timeZone:'Europe/Copenhagen'});}
@@ -168,5 +191,5 @@ function nextGuidance(s,entries=[],now=Date.now()){
 }
 
 E.question=question;E.group=group;E.record=record;E.passageQuestions=passageQuestions;E.validateScore=validateScore;
-return {DAY,INTERVAL_DAYS,parseLine,fromSpec,validateScore,concept,migrate,dueReviews,question,group,record,sequenceQuestion,melodyQuestion,chordQuestion,intervalQuality,tapQuestion,gradeTaps,tapTargets,pulseInfo,timeline,addPractice,nextPiece,localDay,route,markRoute,nextGuidance};
+return {DAY,INTERVAL_DAYS,parseLine,fromSpec,validateScore,concept,migrate,dueReviews,question,group,record,sequenceQuestion,melodyQuestion,chordQuestion,intervalQuality,tapQuestion,gradeTaps,tapTargets,pulseInfo,timeline,addPractice,nextPiece,localDay,route,markRoute,nextGuidance,readiness,keyCoverage};
 });
