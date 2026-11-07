@@ -3,7 +3,7 @@
 ## Version 5.1: flere bidder fra samme komposition (7. november 2026)
 
 - **64 øvestykker/uddrag** i alt, heraf **30 selvstændige uddrag fra syv klassiske værker**. 18 nye passager er tilføjet til de eksisterende 12 klassiske uddrag. De øvrige 34 stykker er originale Nodeværk-øvelser, inklusive fire niveau 5–8-stykker.
-- Flere selvstændige taktintervaller fra *Gymnopédie nr. 1*, *Menuet i G*, Mozarts menuet K. 2 og nye uddrag fra Beethovens *Für Elise* og Chopins præludium op. 28 nr. 4. De tidligere *Arabesque*-uddrag er bevaret.
+- Flere selvstændige taktintervaller fra *Gymnopédie nr. 1*, *Menuet i G*, Mozarts menuet K. 2 og nye uddrag fra Beethovens *Für Elise*, Mozarts *Turkish March* og Chopins præludium op. 28 nr. 4. De tidligere *Arabesque*-uddrag er bevaret.
 - På siden Stykker kan brugeren filtrere efter værk og se antallet af passager. Inde på hvert klassisk uddrag vises andre uddrag fra samme værk, så man hurtigt kan skifte til et andet taktinterval.
 - Alle nye transskriptioner er baseret på public-domain-nodeudgaver fra [Mutopia Project](https://www.mutopiaproject.org/); kilde-URL og beskrivelse af forenkling fremgår af hvert uddrag. De gengiver ikke fuld fingersætning, dynamik og pedal, og enkelte akkorder er forenklede til spilbare håndspænd.
 - Kun verificerbart frie/publikationsberettigede partiturer lægges i denne GitHub Pages-app. Brugerens egne PDF-filer til moderne værker som *Nuvole Bianche* og *River Flows in You* uploades ikke til publiceret kode. Mozarts *Turkish March* er derimod frit anvendeligt som originalværk, og appens to uddrag stammer fra Mutopias public-domain-udgave, ikke fra brugerens fil. At noder kan ses gratis på nettet, giver ikke nødvendigvis ret til at genudgive dem.
