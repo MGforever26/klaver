@@ -20,7 +20,7 @@ const specs=[
       "url": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=37",
       "title": "Gymnopédie · Ny frase, Takt 22–25",
       "license": "Public Domain",
-      "adaptation": "Toner og varigheder transskriberet fra den frit anvendelige Mutopia-nodeudgave. Bas og mellemstemme er samlet i venstre hånd, hvor stemmerne overlapper. Meloditoner og løse fortegn er bevaret; fingersætning, dynamik, frasering og forsiringer er udeladt."
+      "adaptation": "Toner og varigheder transskriberet fra den frit anvendelige Mutopia-nodeudgave. Bas og mellemstemme er samlet i venstre hånd. Enkelte indre toner i brede akkorder er udeladt, så grebene kan spilles med én hånd. Meloditoner og løse fortegn er bevaret; fingersætning, dynamik, frasering og forsiringer er udeladt."
     },
     "measures": [
       {
@@ -33,11 +33,11 @@ const specs=[
       },
       {
         "treble": "D5:q Cn5:q B4:q",
-        "bass": "D2:q D3+G3+B3+E4:h"
+        "bass": "D2:q G3+B3+E4:h"
       },
       {
         "treble": "D5:hd",
-        "bass": "D2:q Cn3+E3+A3+D4:h"
+        "bass": "D2:q E3+A3+D4:h"
       }
     ]
   },
@@ -56,12 +56,12 @@ const specs=[
       "url": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=37",
       "title": "Gymnopédie · Kromatiske bevægelser, Takt 26–29",
       "license": "Public Domain",
-      "adaptation": "Toner og varigheder transskriberet fra den frit anvendelige Mutopia-nodeudgave. Bas og mellemstemme er samlet i venstre hånd, hvor stemmerne overlapper. Meloditoner og løse fortegn er bevaret; fingersætning, dynamik, frasering og forsiringer er udeladt."
+      "adaptation": "Toner og varigheder transskriberet fra den frit anvendelige Mutopia-nodeudgave. Bas og mellemstemme er samlet i venstre hånd. Enkelte indre toner i brede akkorder er udeladt, så grebene kan spilles med én hånd. Meloditoner og løse fortegn er bevaret; fingersætning, dynamik, frasering og forsiringer er udeladt."
     },
     "measures": [
       {
         "treble": "D5:h D5:q",
-        "bass": "D2:q Cn3+F3+A3+D4:h"
+        "bass": "D2:q F3+A3+D4:h"
       },
       {
         "treble": "E5:q Fn5:q G5:q",
@@ -73,7 +73,7 @@ const specs=[
       },
       {
         "treble": "E5:q D5:q B4:q",
-        "bass": "D2:q D3+G3+B3+E4:h"
+        "bass": "D2:q G3+B3+E4:h"
       }
     ]
   },
@@ -92,16 +92,16 @@ const specs=[
       "url": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=37",
       "title": "Gymnopédie · Mod første afslutning, Takt 30–33",
       "license": "Public Domain",
-      "adaptation": "Toner og varigheder transskriberet fra den frit anvendelige Mutopia-nodeudgave. Bas og mellemstemme er samlet i venstre hånd, hvor stemmerne overlapper. Meloditoner og løse fortegn er bevaret; fingersætning, dynamik, frasering og forsiringer er udeladt."
+      "adaptation": "Toner og varigheder transskriberet fra den frit anvendelige Mutopia-nodeudgave. Bas og mellemstemme er samlet i venstre hånd. Enkelte indre toner i brede akkorder er udeladt, så grebene kan spilles med én hånd. Meloditoner og løse fortegn er bevaret; fingersætning, dynamik, frasering og forsiringer er udeladt."
     },
     "measures": [
       {
         "treble": "D5:hd",
-        "bass": "D2:q Cn3+E3+A3+D4:h"
+        "bass": "D2:q E3+A3+D4:h"
       },
       {
         "treble": "D5:h D5:q",
-        "bass": "D2:q Cn3+F3+A3+D4:h"
+        "bass": "D2:q F3+A3+D4:h"
       },
       {
         "treble": "G5:hd",
@@ -128,7 +128,7 @@ const specs=[
       "url": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=37",
       "title": "Gymnopédie · Første afslutning, Takt 34–37",
       "license": "Public Domain",
-      "adaptation": "Toner og varigheder transskriberet fra den frit anvendelige Mutopia-nodeudgave. Bas og mellemstemme er samlet i venstre hånd, hvor stemmerne overlapper. Meloditoner og løse fortegn er bevaret; fingersætning, dynamik, frasering og forsiringer er udeladt."
+      "adaptation": "Toner og varigheder transskriberet fra den frit anvendelige Mutopia-nodeudgave. Bas og mellemstemme er samlet i venstre hånd. Enkelte indre toner i brede akkorder er udeladt, så grebene kan spilles med én hånd. Meloditoner og løse fortegn er bevaret; fingersætning, dynamik, frasering og forsiringer er udeladt."
     },
     "measures": [
       {
@@ -164,7 +164,7 @@ const specs=[
       "url": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=75",
       "title": "Menuet i G · Ny frase, Takt 9–12",
       "license": "Public Domain",
-      "adaptation": "Toner og varigheder transskriberet fra den frit anvendelige Mutopia-nodeudgave. Bas og mellemstemme er samlet i venstre hånd, hvor stemmerne overlapper. Meloditoner og løse fortegn er bevaret; fingersætning, dynamik, frasering og forsiringer er udeladt."
+      "adaptation": "Toner og varigheder transskriberet fra den frit anvendelige Mutopia-nodeudgave. Bas og mellemstemme er samlet i venstre hånd. Enkelte indre toner i brede akkorder er udeladt, så grebene kan spilles med én hånd. Meloditoner og løse fortegn er bevaret; fingersætning, dynamik, frasering og forsiringer er udeladt."
     },
     "measures": [
       {
@@ -200,7 +200,7 @@ const specs=[
       "url": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=75",
       "title": "Menuet i G · Første dels kadence, Takt 13–16",
       "license": "Public Domain",
-      "adaptation": "Toner og varigheder transskriberet fra den frit anvendelige Mutopia-nodeudgave. Bas og mellemstemme er samlet i venstre hånd, hvor stemmerne overlapper. Meloditoner og løse fortegn er bevaret; fingersætning, dynamik, frasering og forsiringer er udeladt."
+      "adaptation": "Toner og varigheder transskriberet fra den frit anvendelige Mutopia-nodeudgave. Bas og mellemstemme er samlet i venstre hånd. Enkelte indre toner i brede akkorder er udeladt, så grebene kan spilles med én hånd. Meloditoner og løse fortegn er bevaret; fingersætning, dynamik, frasering og forsiringer er udeladt."
     },
     "measures": [
       {
@@ -236,7 +236,7 @@ const specs=[
       "url": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=75",
       "title": "Menuet i G · Sekvens opad, Takt 21–24",
       "license": "Public Domain",
-      "adaptation": "Toner og varigheder transskriberet fra den frit anvendelige Mutopia-nodeudgave. Bas og mellemstemme er samlet i venstre hånd, hvor stemmerne overlapper. Meloditoner og løse fortegn er bevaret; fingersætning, dynamik, frasering og forsiringer er udeladt."
+      "adaptation": "Toner og varigheder transskriberet fra den frit anvendelige Mutopia-nodeudgave. Bas og mellemstemme er samlet i venstre hånd. Enkelte indre toner i brede akkorder er udeladt, så grebene kan spilles med én hånd. Meloditoner og løse fortegn er bevaret; fingersætning, dynamik, frasering og forsiringer er udeladt."
     },
     "measures": [
       {
@@ -272,7 +272,7 @@ const specs=[
       "url": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1770",
       "title": "Mozart K. 2 · To små spejlfraser, Takt 5–6",
       "license": "Public Domain",
-      "adaptation": "Toner og varigheder transskriberet fra den frit anvendelige Mutopia-nodeudgave. Bas og mellemstemme er samlet i venstre hånd, hvor stemmerne overlapper. Meloditoner og løse fortegn er bevaret; fingersætning, dynamik, frasering og forsiringer er udeladt."
+      "adaptation": "Toner og varigheder transskriberet fra den frit anvendelige Mutopia-nodeudgave. Bas og mellemstemme er samlet i venstre hånd. Enkelte indre toner i brede akkorder er udeladt, så grebene kan spilles med én hånd. Meloditoner og løse fortegn er bevaret; fingersætning, dynamik, frasering og forsiringer er udeladt."
     },
     "measures": [
       {
