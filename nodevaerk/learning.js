@@ -136,18 +136,17 @@ function timeline(score,hand='both',start=0,end=score.measures.length){
  }offset+=pulseInfo(score.time).beats;}
  return {events,duration:offset};
 }
-/* Schedule actual score notes after one count-in measure, using the same
- * pulse unit as the metronome. Events are relative to the first click. */
+/* Pure playback scheduling: no metronome or count-in. Tempo is in
+ * quarter notes for simple time, dotted quarters for compound time. */
 function studioPlaybackPlan(score,hand,tempo,start,end){
  if(!Number.isFinite(tempo)||tempo<=0||!Number.isInteger(start)||!Number.isInteger(end)||start<0||end<=start||end>score.measures.length)throw Error('Ugyldigt lydudsnit');
+ if(!['both','treble','bass'].includes(hand))throw Error('Ugyldigt valg af hånd');
  const info=pulseInfo(score.time),period=60/tempo,secondsPerQuarter=period/info.pulse;
  const sequence=timeline(score,hand,start,end);
- const countInSeconds=info.pulses*period;
  return {
-  countInSeconds,period,pulsesPerBar:info.pulses,
-  metronomePulses:(1+end-start)*info.pulses,
-  totalSeconds:countInSeconds+sequence.duration*secondsPerQuarter,
-  events:sequence.events.map(e=>({...e,startSeconds:countInSeconds+e.at*secondsPerQuarter,durationSeconds:e.duration*secondsPerQuarter}))
+  barSeconds:info.pulses*period,
+  totalSeconds:sequence.duration*secondsPerQuarter,
+  events:sequence.events.map(e=>({...e,startSeconds:e.at*secondsPerQuarter,durationSeconds:e.duration*secondsPerQuarter}))
  };
 }
 function tapTargets(q){let at=0;return E.resolveScore(q.score).flatMap(m=>m.treble.map(n=>{const value=!n.rest&&!n.tied?at:null;at+=n.beats;return value;})).filter(v=>v!==null);}
