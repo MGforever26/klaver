@@ -181,12 +181,12 @@ function performanceTrends(s,skillFilter=null){
  for(const a of s.attempts||[]){
   const kind=taskKind(a);if(!kind||a.kind==='tap'||kind==='tap'||(skillFilter&&a.skill!==skillFilter))continue;
   if(!Number.isInteger(a.level)||!s.skills?.[a.skill]||a.level!==s.skills[a.skill].level)continue;
-  const id=a.skill+'|'+kind+'|'+a.level;if(!sets.has(id))sets.set(id,[]);sets.get(id).push(a);
+  const id=a.skill+'|'+kind+'|'+a.level+'|'+(a.clef||'both');if(!sets.has(id))sets.set(id,[]);sets.get(id).push(a);
  }
  const out=[];
  for(const [id,items] of sets){
   if(items.length<16)continue;
-  const [skill,kind,levelString]=id.split('|'),early=items.slice(0,8),late=items.slice(-8);
+  const [skill,kind,levelString,clef]=id.split('|'),early=items.slice(0,8),late=items.slice(-8);
   const correctEarly=early.filter(a=>a.correct).length,correctLate=late.filter(a=>a.correct).length;
   const earlyTime=E.median(early.filter(goodTime).map(speedValue)),lateTime=E.median(late.filter(goodTime).map(speedValue));
   let category='stabil',message='',changePercent=null;
@@ -198,7 +198,7 @@ function performanceTrends(s,skillFilter=null){
   }else if(changeAccuracy>=2){category='precision';message='Flere af dine svar er rigtige. Det er et godt tegn på øget sikkerhed.';}
   else if(changePercent!==null&&changePercent>=15){category='slowdown';message='Svarene tager længere tid. Se om de nye opgaver kræver mere afkodning.';}
   else message='Der er endnu ingen tydelig forskel mellem den tidlige og den seneste gruppe.';
-  out.push({skill,kind,label:ANALYSIS_TYPES[kind],level:Number(levelString),count:items.length,
+  out.push({skill,kind,clef,label:ANALYSIS_TYPES[kind]+(clef==='treble'?' i G-nøgle':clef==='bass'?' i F-nøgle':''),level:Number(levelString),count:items.length,
    earlyCorrect:correctEarly,lateCorrect:correctLate,earlyMs:earlyTime,lateMs:lateTime,
    changePercent,changeAccuracy,category,message});
  }
