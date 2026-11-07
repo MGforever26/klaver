@@ -35,3 +35,15 @@
 .key-counter span{font-size:12px;color:var(--muted)}
 .key-coverage .bar-track{min-height:8px;margin:10px 0 14px}
 .key-coverage .subtle{margin:8px 0;line-height:1.5}
+
+/* V5: comparable performance, not decorative level badges. */
+.trend-card{margin:16px 0}
+.trend-card h2{font-size:19px;margin:8px 0 12px}
+.trend-item{padding:14px 0;border-bottom:1px solid var(--line,#e1e3db)}
+.trend-item:last-of-type{border-bottom:0}
+.trend-item>.row{align-items:baseline;gap:8px;flex-wrap:wrap}
+.trend-item .row strong{font-size:15px}
+.trend-item .row span{font-size:12px;color:var(--muted,#68716c)}
+.trend-item p{line-height:1.48;margin:7px 0}
+.trend-item p.subtle{font-size:12px;line-height:1.5}
+.trend-card>p.subtle{font-size:12px;line-height:1.6;margin:12px 0 0}
