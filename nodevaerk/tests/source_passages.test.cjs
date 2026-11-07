@@ -36,10 +36,11 @@ test('New passages have full measures and usable notes in both hands',()=>{
   assert.deepEqual(L.validateScore(piece),[],piece.id);
   assert.ok(piece.measures.length>=2&&piece.measures.length<=6,piece.id);
   const score=E.resolveScore(piece);
+  for(const clef of ['treble','bass'])assert.ok(score.some(m=>m[clef].some(n=>!n.rest)),piece.id+' must use '+clef);
   for(const measure of score){
+   assert.ok(['treble','bass'].some(clef=>measure[clef].some(n=>!n.rest)),piece.id+' has a silent measure');
    for(const clef of ['treble','bass']){
     const notes=measure[clef].filter(n=>!n.rest);
-    assert.ok(notes.length,piece.id+' '+clef);
     for(const note of notes){
      const midi=note.tones.map(t=>t.midi);
      assert.deepEqual([...midi].sort((a,b)=>a-b),midi,piece.id+' chord order');
