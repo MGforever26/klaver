@@ -96,7 +96,7 @@ test('Promotion readiness uses the same rolling 10 answers as the level engine',
  const p=L.readiness(s,'bass');
  assert.equal(p.level,3);assert.equal(p.answered,10);assert.equal(p.correct,8);
  assert.equal(p.missing,1);assert.equal(p.answerProgress,100);
- assert.ok(p.status.includes('9 rigtige'));
+ assert.ok(p.status.includes('mindst 9'));
  E.record(s,q,q.answer,1100,11);
  assert.equal(s.skills.bass.level,4);
  assert.equal(L.readiness(s,'bass').complete,false);assert.equal(L.readiness(s,'bass').maxLevel,8);
