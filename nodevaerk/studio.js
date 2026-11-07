@@ -80,13 +80,19 @@ function studioAction(ev){const b=ev.target.closest('[data-action]');if(!b||b.di
  else if(a==='studio')studio(b.dataset.id);
  else if(a==='catalog-filter'){catalogFilter=b.dataset.value;pieces();}
  else if(a==='review-start')start('review');
+ else if(a==='guided-next'){
+  const session=state.session,entries=session?.kind==='group'?session.results.slice(session.groupStart,session.index):[];
+  const guide=L.nextGuidance(state,entries);state.session=null;save();
+  if(guide.kind==='studio')studio(guide.pieceId);else start(guide.focus);
+ }
+ else if(a==='free-group'){state.session=null;save();home();}
  else if(a==='studio-mode'){studioConfig.mode=b.dataset.value;studio(pieceId,true);}
  else if(a==='studio-start')runStudio();
  else if(a==='studio-stop'){stopAudio();document.getElementById('studio-start').disabled=false;document.getElementById('studio-pulse').textContent='Stoppet';}
  else if(a==='studio-listen'){if(transport){stopAudio();updateStudioListen();}else{const id=pieceId;listenScore(E.PIECES.find(p=>p.id===id),'both',state.settings.tempo||64).then(updateStudioListen).catch(()=>announce('Lyd kunne ikke starte.'));}}
  else if(a==='studio-listen-part'){const c=studioConfig;listenScore(E.PIECES.find(p=>p.id===pieceId),c.hand,c.tempo,c.start,c.end).catch(()=>announce('Lyd kunne ikke starte.'));}
  else if(a==='studio-zoom'){const c=studioConfig;openZoom(E.PIECES.find(p=>p.id===pieceId),null,Array.from({length:c.end-c.start},(_,i)=>c.start+i));}
- else if(a==='practice-rate'){stopAudio();L.addPractice(state,{...studioConfig,rating:b.dataset.value});save();const text={flow:'Gemt. Prøv et nyt stykke på samme niveau, eller spil et længere udsnit.',notes:'Gemt. Find den første usikre tone, og læs den sammen med tonen før og efter.',rhythm:'Gemt. Bank rytmen først, og prøv derefter et lidt langsommere tempo.',hands:'Gemt. Prøv én hånd ad gangen, og saml derefter to takter.'};document.getElementById('practice-saved').textContent=text[b.dataset.value];document.querySelectorAll('[data-action="practice-rate"]').forEach(el=>el.disabled=true);document.getElementById('studio-start').disabled=false;}
+ else if(a==='practice-rate'){stopAudio();L.addPractice(state,{...studioConfig,rating:b.dataset.value});L.markRoute(state,'repertoire');save();const text={flow:'Gemt. Prøv et nyt stykke på samme niveau, eller spil et længere udsnit.',notes:'Gemt. Find den første usikre tone, og læs den sammen med tonen før og efter.',rhythm:'Gemt. Bank rytmen først, og prøv derefter et lidt langsommere tempo.',hands:'Gemt. Prøv én hånd ad gangen, og saml derefter to takter.'};document.getElementById('practice-saved').textContent=text[b.dataset.value];document.querySelectorAll('[data-action="practice-rate"]').forEach(el=>el.disabled=true);document.getElementById('studio-start').disabled=false;}
 }
 document.addEventListener('click',studioAction);
 document.addEventListener('pointerdown',ev=>{if(ev.target.closest('[data-action="tap-hit"]')){ev.preventDefault();tapHit();}});
