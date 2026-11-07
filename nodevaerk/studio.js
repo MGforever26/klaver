@@ -32,7 +32,14 @@ feedback=function(entry){let html=oldFeedback(entry);const {q,result}=entry;
 };
 function stopTransport(){for(const timer of transportTimers){clearTimeout(timer);clearInterval(timer);}transportTimers=[];for(const node of transportNodes){try{node.stop();}catch{}}transportNodes=[];transport=null;const startButton=document.getElementById('studio-start');if(startButton)startButton.disabled=false;document.querySelectorAll('.playing-measure').forEach(el=>el.classList.remove('playing-measure'));}
 stopAudio=function(){oldStopAudio();stopTransport();};
-async function ensureAudio(){const AudioCtx=window.AudioContext||window.webkitAudioContext;if(!AudioCtx)throw Error('Lyd er ikke tilgængelig');if(!audio)audio=new AudioCtx();await audio.resume();return audio;}
+async function ensureAudio(){
+ const AudioCtx=window.AudioContext||window.webkitAudioContext;
+ if(!AudioCtx)throw Error('Denne browser understøtter ikke lyd');
+ if(!audio||audio.state==='closed')audio=new AudioCtx();
+ if(audio.state!=='running')await audio.resume();
+ if(audio.state!=='running')throw Error('Lyden blev ikke aktiveret af browseren');
+ return audio;
+}
 function sound(midi,start,duration,volume=.12,click=false){const osc=audio.createOscillator(),gain=audio.createGain();osc.type=click?'sine':'triangle';osc.frequency.value=click?midi:440*Math.pow(2,(midi-69)/12);gain.gain.setValueAtTime(0,start);gain.gain.linearRampToValueAtTime(volume,start+.008);gain.gain.exponentialRampToValueAtTime(.001,start+Math.max(.025,duration-.015));osc.connect(gain);gain.connect(audio.destination);osc.start(start);osc.stop(start+duration);osc.onended=()=>{osc.disconnect();gain.disconnect();};transportNodes.push(osc);}
 function scheduleClicks(start,tempo,pulses,count,accentEvery){const period=60/tempo;for(let i=0;i<count;i++)sound(i%accentEvery===0?1100:740,start+i*period,.045,i%accentEvery===0?.12:.075,true);}
 async function startTap(){const q=current();if(!q||q.type!=='tap'||state.session.results[state.session.index]||tapRun)return;
@@ -56,14 +63,50 @@ showPiece=function(id){stopAudio();pieceId=id;page='piece';const p=E.PIECES.find
 function studio(id,keep=false){stopAudio();pieceId=id;page='studio';const p=E.PIECES.find(p=>p.id===id);if(!p)return pieces();
  if(!keep||!studioConfig||studioConfig.pieceId!==id)studioConfig={pieceId:id,hand:'both',mode:'read',tempo:p.tempo||Math.min(64,state.settings.tempo||56),start:0,end:Math.min(4,p.measures.length)};
  const cfg=studioConfig;pieceId=id;
- shell('<button class="back-button" data-action="piece" data-id="'+id+'">'+icon('back')+esc(p.title)+'</button><section class="studio-title"><div class="eyebrow">Ved klaveret · '+E.KEY_NAMES[p.tonality||p.key]+' · '+p.time+'</div><h1>'+esc(p.title)+'</h1></section><div class="chips studio-mode">'+[['read','Fra bladet'],['practice','Indstudering']].map(([v,t])=>'<button class="chip '+(cfg.mode===v?'active':'')+'" data-action="studio-mode" data-value="'+v+'">'+t+'</button>').join('')+'</div><p class="practice-tip">'+(cfg.mode==='read'?'Se kort på toneart, starttoner og mønstre. Vælg et roligt tempo, og spil igennem uden at rette undervejs.':'Arbejd med den passage, der driller. Brug én hånd, sænk tempoet, og sæt den tilbage i sammenhæng bagefter.')+'</p><section class="studio-controls"><label>Hænder<select id="studio-hand"><option value="both" '+(cfg.hand==='both'?'selected':'')+'>Begge hænder</option><option value="treble" '+(cfg.hand==='treble'?'selected':'')+'>Højre hånd</option><option value="bass" '+(cfg.hand==='bass'?'selected':'')+'>Venstre hånd</option></select></label><label>Fra takt<select id="studio-from">'+p.measures.map((_,i)=>'<option value="'+i+'" '+(i===cfg.start?'selected':'')+'>'+(i+1)+'</option>').join('')+'</select></label><label>Til takt<select id="studio-to">'+p.measures.map((_,i)=>'<option value="'+(i+1)+'" '+(i+1===cfg.end?'selected':'')+'>'+(i+1)+'</option>').join('')+'</select></label></section><label class="tempo">Tempo<input id="studio-tempo" type="range" min="32" max="120" step="2" value="'+cfg.tempo+'"><span id="studio-tempo-label">'+cfg.tempo+' BPM</span></label><p class="subtle">'+(L.pulseInfo(p.time).compound?'Ét klik er en punkteret fjerdedel.':'Ét klik er en fjerdedel.')+'</p><div class="studio-transport"><button class="primary" id="studio-start" data-action="studio-start">'+icon('play')+'Optælling og puls</button><button class="secondary" data-action="studio-stop">Stop</button></div><div class="studio-pulse" id="studio-pulse" aria-live="polite">Klar til takt '+(cfg.start+1)+' til '+cfg.end+'</div><div class="score-card studio-score"><div class="score-tools"><span class="eyebrow">Følg begge systemer</span><button class="text-button" data-action="studio-zoom">'+icon('zoom')+'Forstør</button></div><div id="studio-score" class="score"></div></div><button class="text-button" data-action="studio-listen-part">Lyt til det valgte udsnit</button><section class="card practice-log"><h2>Hvordan gik gennemspilningen?</h2><p class="subtle">Din egen vurdering. Appen lytter ikke til klaveret.</p><div class="rating-buttons"><button class="secondary" data-action="practice-rate" data-value="flow">Holdt pulsen</button><button class="secondary" data-action="practice-rate" data-value="notes">Toner drillede</button><button class="secondary" data-action="practice-rate" data-value="rhythm">Rytmen drillede</button><button class="secondary" data-action="practice-rate" data-value="hands">Hænderne drillede</button></div><p id="practice-saved" class="subtle" aria-live="polite"></p></section>'+sourceMarkup(p));drawStudio();window.scrollTo(0,0);
+ shell('<button class="back-button" data-action="piece" data-id="'+id+'">'+icon('back')+esc(p.title)+'</button><section class="studio-title"><div class="eyebrow">Ved klaveret · '+E.KEY_NAMES[p.tonality||p.key]+' · '+p.time+'</div><h1>'+esc(p.title)+'</h1></section><div class="chips studio-mode">'+[['read','Fra bladet'],['practice','Indstudering']].map(([v,t])=>'<button class="chip '+(cfg.mode===v?'active':'')+'" data-action="studio-mode" data-value="'+v+'">'+t+'</button>').join('')+'</div><p class="practice-tip">'+(cfg.mode==='read'?'Se kort på toneart, starttoner og mønstre. Vælg et roligt tempo, og spil igennem uden at rette undervejs.':'Arbejd med den passage, der driller. Brug én hånd, sænk tempoet, og sæt den tilbage i sammenhæng bagefter.')+'</p><section class="studio-controls"><label>Hænder<select id="studio-hand"><option value="both" '+(cfg.hand==='both'?'selected':'')+'>Begge hænder</option><option value="treble" '+(cfg.hand==='treble'?'selected':'')+'>Højre hånd</option><option value="bass" '+(cfg.hand==='bass'?'selected':'')+'>Venstre hånd</option></select></label><label>Fra takt<select id="studio-from">'+p.measures.map((_,i)=>'<option value="'+i+'" '+(i===cfg.start?'selected':'')+'>'+(i+1)+'</option>').join('')+'</select></label><label>Til takt<select id="studio-to">'+p.measures.map((_,i)=>'<option value="'+(i+1)+'" '+(i+1===cfg.end?'selected':'')+'>'+(i+1)+'</option>').join('')+'</select></label></section><label class="tempo">Tempo<input id="studio-tempo" type="range" min="32" max="120" step="2" value="'+cfg.tempo+'"><span id="studio-tempo-label">'+cfg.tempo+' BPM</span></label><p class="subtle">'+'Afspilning af de valgte takter i syntetisk klaverklang, uden metronom eller optælling.'+'</p><div class="studio-transport"><button class="primary" id="studio-start" data-action="studio-start">'+icon('play')+'Afspil valgte takter</button><button class="secondary" data-action="studio-stop">Stop</button></div><div class="studio-pulse" id="studio-pulse" aria-live="polite">Klar til takt '+(cfg.start+1)+' til '+cfg.end+'</div><div class="score-card studio-score"><div class="score-tools"><span class="eyebrow">Følg begge systemer</span><button class="text-button" data-action="studio-zoom">'+icon('zoom')+'Forstør</button></div><div id="studio-score" class="score"></div></div><section class="card practice-log"><h2>Hvordan gik gennemspilningen?</h2><p class="subtle">Din egen vurdering. Appen lytter ikke til klaveret.</p><div class="rating-buttons"><button class="secondary" data-action="practice-rate" data-value="flow">Holdt pulsen</button><button class="secondary" data-action="practice-rate" data-value="notes">Toner drillede</button><button class="secondary" data-action="practice-rate" data-value="rhythm">Rytmen drillede</button><button class="secondary" data-action="practice-rate" data-value="hands">Hænderne drillede</button></div><p id="practice-saved" class="subtle" aria-live="polite"></p></section>'+sourceMarkup(p));drawStudio();window.scrollTo(0,0);
 }
 function drawStudio(){const p=E.PIECES.find(p=>p.id===pieceId);Notation.render(document.getElementById('studio-score'),p,{indices:Array.from({length:studioConfig.end-studioConfig.start},(_,i)=>i+studioConfig.start),hand:studioConfig.hand});}
-async function runStudio(){if(transport)stopAudio();const cfg={...studioConfig},p=E.PIECES.find(p=>p.id===cfg.pieceId);try{await ensureAudio();if(page!=='studio'||pieceId!==cfg.pieceId)return;document.querySelectorAll('[data-action="practice-rate"]').forEach(el=>el.disabled=false);document.getElementById('practice-saved').textContent='';const info=L.pulseInfo(p.time),period=60/cfg.tempo,bars=cfg.end-cfg.start,lead=.2,begin=audio.currentTime+lead,perfStart=performance.now()+lead*1000;transport={kind:'studio'};let lastBar=-1;
- scheduleClicks(begin,cfg.tempo,info.pulses,(bars+1)*info.pulses,info.pulses);document.getElementById('studio-start').disabled=true;
- transportTimers.push(setInterval(()=>{const pulse=Math.floor((performance.now()-perfStart)/(period*1000));const bar=Math.floor(pulse/info.pulses)-1,beat=((pulse%info.pulses)+info.pulses)%info.pulses+1;const label=document.getElementById('studio-pulse');if(!label)return;label.textContent=bar<0?'Optælling · '+beat:'Takt '+(cfg.start+bar+1)+' · '+beat;document.querySelectorAll('#studio-score .notation-system').forEach(el=>el.classList.toggle('playing-measure',Number(el.dataset.measure)===cfg.start+bar));if(bar>=0&&bar!==lastBar){lastBar=bar;document.querySelector('#studio-score .playing-measure')?.scrollIntoView({behavior:'smooth',block:'center'});}},40));
- transportTimers.push(setTimeout(()=>{stopTransport();document.getElementById('studio-start').disabled=false;document.getElementById('studio-pulse').textContent='Gennemspilningen er slut. Vurdér den nedenfor.';},(lead+(bars+1)*info.pulses*period)*1000));
- }catch{document.getElementById('studio-pulse').textContent='Lyden kunne ikke starte. Prøv igen med lyd tilladt.';}}
+async function runStudio(){
+ if(transport)stopAudio();
+ const cfg={...studioConfig},p=E.PIECES.find(p=>p.id===cfg.pieceId);
+ if(!p)return;
+ try{
+  const ctx=await ensureAudio();
+  if(page!=='studio'||pieceId!==cfg.pieceId)return;
+  const plan=L.studioPlaybackPlan(p,cfg.hand,cfg.tempo,cfg.start,cfg.end);
+  if(!plan.events.length)throw Error('Der er ingen noder at afspille i det valgte udsnit');
+  document.querySelectorAll('[data-action="practice-rate"]').forEach(el=>el.disabled=false);
+  document.getElementById('practice-saved').textContent='';
+  const lead=.08,begin=ctx.currentTime+lead,perfStart=performance.now()+lead*1000;
+  transport={kind:'studio'};
+  const startButton=document.getElementById('studio-start');
+  startButton.disabled=true;
+  for(const event of plan.events)sound(event.midi,begin+event.startSeconds,Math.max(.07,event.durationSeconds*.9),event.clef==='treble'?.12:.09);
+  const label=document.getElementById('studio-pulse');
+  label.textContent='Afspiller takt '+(cfg.start+1)+' til '+cfg.end;
+  let previous=-1;
+  transportTimers.push(setInterval(()=>{
+   if(page!=='studio'||!transport||transport.kind!=='studio')return;
+   const elapsed=Math.max(0,(performance.now()-perfStart)/1000);
+   const bar=Math.min(cfg.end-cfg.start-1,Math.floor(elapsed/plan.barSeconds));
+   if(bar!==previous){
+    previous=bar;
+    const measure=cfg.start+bar;
+    label.textContent='Afspiller takt '+(measure+1)+' af '+p.measures.length;
+    document.querySelectorAll('#studio-score .notation-system').forEach(el=>el.classList.toggle('playing-measure',Number(el.dataset.measure)===measure));
+   }
+  },75));
+  transportTimers.push(setTimeout(()=>{
+   stopTransport();
+   if(page==='studio'&&document.getElementById('studio-pulse'))label.textContent='Afspilningen er slut. Du kan høre stykket igen eller prøve selv.';
+  },(lead+plan.totalSeconds)*1000+150));
+ }catch(err){
+  console.error('Nodeværk: nodeafspilning',err);
+  stopTransport();
+  const label=document.getElementById('studio-pulse');
+  if(label)label.textContent='Lyden kunne ikke starte: '+(err?.message||'Prøv igen og kontrollér telefonens lydstyrke.');
+ }
+}
 progress=function(){oldProgress();L.migrate(state);
  const main=APP.querySelector('main'),skillCard=main.querySelector('.skill-row')?.closest('section.card');
  if(skillCard){
