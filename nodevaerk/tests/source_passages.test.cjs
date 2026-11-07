@@ -1,0 +1,83 @@
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const vm=require('node:vm');
+const E=require('../engine.js');
+const L=require('../learning.js');
+require('../repertoire.js');
+require('../advanced.js');
+const added=require('../source_passages.js');
+
+const groups={
+ 'satie-gymno':7,
+ 'burgmuller-arabesque':3,
+ 'mozart-k2':6,
+ 'petzold-menuet':8,
+ 'beethoven-furelise':2,
+ 'chopin-prelude28-4':2
+};
+
+test('Six works have 28 separate public-domain excerpts and stable names',()=>{
+ assert.equal(added.length,16);
+ assert.equal(E.PIECES.length,62);
+ assert.equal(new Set(E.PIECES.map(p=>p.id)).size,E.PIECES.length);
+ for(const [workId,count] of Object.entries(groups)){
+  const pieces=E.PIECES.filter(p=>p.workId===workId);
+  assert.equal(pieces.length,count,workId);
+  assert.ok(pieces.every(p=>p.workName&&p.collection==='klassisk'&&p.source?.license==='Public Domain'),workId);
+ }
+ const original=E.PIECES.slice(0,6);
+ assert.deepEqual(original.map(p=>p.id),['morgentrin','vals','samtale','paa-vej','boelger','drejning']);
+});
+
+test('New passages have full measures and usable notes in both hands',()=>{
+ for(const piece of added){
+  assert.deepEqual(L.validateScore(piece),[],piece.id);
+  assert.ok(piece.measures.length>=2&&piece.measures.length<=6,piece.id);
+  const score=E.resolveScore(piece);
+  for(const measure of score){
+   for(const clef of ['treble','bass']){
+    const notes=measure[clef].filter(n=>!n.rest);
+    assert.ok(notes.length,piece.id+' '+clef);
+    for(const note of notes){
+     const midi=note.tones.map(t=>t.midi);
+     assert.deepEqual([...midi].sort((a,b)=>a-b),midi,piece.id+' chord order');
+     assert.ok(midi.at(-1)-midi[0]<=12,piece.id+' one-hand span');
+    }
+   }
+  }
+  const play=L.studioPlaybackPlan(piece,'both',64,0,piece.measures.length);
+  assert.ok(play.events.length>5,piece.id);
+  assert.ok(play.events.every(e=>Number.isFinite(e.midi)&&e.startSeconds>=0&&e.durationSeconds>0),piece.id);
+  assert.ok(play.events.every(e=>e.startSeconds+e.durationSeconds<=play.totalSeconds+1e-7),piece.id);
+ }
+});
+
+test('Satie, Beethoven and Chopin samples preserve the critical accidentals',()=>{
+ const get=id=>E.PIECES.find(p=>p.id===id);
+ assert.equal(get('satie-gymno-t22-25').tonality,'Bm');
+ assert.deepEqual(E.resolveScore(get('beethoven-furelise-t1-4'))[0].treble.map(n=>n.midi),[76,75,76,71,74,72]);
+ assert.deepEqual(E.resolveScore(get('chopin-prelude28-4-t1-4'))[3].treble.map(n=>n.midi),[71,70]);
+ assert.equal(E.resolveScore(get('chopin-prelude28-4-t5-8'))[4-1].treble.at(-1).midi,68);
+});
+
+test('The same work has multiple non-identical note passages',()=>{
+ for(const workId of ['satie-gymno','petzold-menuet','mozart-k2','beethoven-furelise','chopin-prelude28-4']){
+  const pieces=E.PIECES.filter(p=>p.workId===workId),melodies=pieces.map(p=>E.resolveScore(p).flatMap(m=>m.treble.flatMap(n=>n.rest?[]:n.tones.map(t=>t.midi))).join(','));
+  assert.ok(new Set(melodies).size>1,workId);
+ }
+});
+
+test('The new score module runs before app start and is available offline',()=>{
+ const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+ assert.ok(html.indexOf('advanced.js')<html.indexOf('source_passages.js'));
+ assert.ok(html.indexOf('source_passages.js')<html.indexOf('app.js'));
+ const cache=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8');
+ assert.match(cache,/source_passages\.js/);
+ for(const name of ['source_passages.js','studio.js','sw.js']){
+  assert.doesNotThrow(()=>new vm.Script(fs.readFileSync(path.join(__dirname,'..',name),'utf8'),{filename:name}),name);
+ }
+ const app=fs.readFileSync(path.join(__dirname,'../app.js'),'utf8');
+ assert.match(app,/nodevaerk\.progress\.v1/);
+});
