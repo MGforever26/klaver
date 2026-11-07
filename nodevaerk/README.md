@@ -1,5 +1,19 @@
 # Nodeværk
 
+Version 4 med bred toneartstræning, progression og tydelige næste skridt. Den originale klaverapp i repositoriets rod er uændret.
+
+## Udvidelse 7. november 2026
+
+- 12 durtonearter samt deres 12 relative naturlige moltonearter. 12 toneartssignaturer, med dansk navngivning (H-dur, Fis-dur, B-mol m.v.). På niveau 3 og 4 kommer alle 24 i omløb, også i G-/F-nøgler og hele takter. Niveau 1 og 2 har mindre puljer. De eksisterende øvestykker forbliver uændrede.
+- Takternes toner vælges i det relevante fortegnssystem med en bias mod den valgte tonearts grundtone. Rytme og samspil fortsætter i 2/4, 3/4, 4/4, 6/8 og 12/8. Ingen påstand om at hver tilfældigt genereret takt er en komplet komposition i den viste toneart.
+- Efter hver øvegruppe vises status på op til tre trænede områder. Under Fremskridt vises alle seks færdigheder. Visningen bruger den eksisterende algoritmes faktiske regler: seneste 10 svar på aktuelt niveau, mindst 9 korrekte samt medianhastighed under færdighedens grænse. Niveau 4 er sidste nuværende trin; dækningen af tonearter fortsætter derefter.
+- Toneartsoverblikket tæller, hvilke af 24 tonearter der er mødt siden opdateringen, ikke hvilke der er mestret. Nye svar gemmer toneart og taktart; gamle svar forbliver intakte uden bagudopfundet metadata.
+- Efter gruppen kommer også et anbefalet næste skridt fra grundøvelse til takt- og musiklæsning. Det er valgfrit.
+- Ingen ændring i nøglen `nodevaerk.progress.v1`, den eksisterende `version:1`-state, besvarelser, niveauer, aktive sessioner, `learning.reviews` eller tidligere gemte øvelser. Kun additive felter. Der er stadig ingen serverbaseret backup eller synkronisering mellem enheder.
+- Testene under `nodevaerk/tests` dækker tonearter, dansk tonenavngivning, partiturintegritet, facit, øvegruppernes fordeling, niveaukrav, tidligere fremskridt og JavaScript-syntaks. Browserens visuelle layout er ikke testet på fysisk iPhone.
+
+---
+
 Version 3 med 42 øvestykker, klaverstudie, tonerækker, akkorder, bankerytmer og gentagelser over flere dage. Oprindeligt færdig første version af en personlig webapp til nodelæsning på klaver. Dansk brugerflade, mobile skærme, begge nøgler og originale små klaverstykker. Selvstændig app i `nodevaerk/` i klaver-repositoriet. Den eksisterende klaverapp ligger fortsat i roden og ændres ikke af Nodeværk.
 
 ## Brug
