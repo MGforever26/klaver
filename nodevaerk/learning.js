@@ -154,20 +154,66 @@ function nextPiece(s,pieces=E.PIECES){migrate(s);
 }
 /* Progress is calculated from the same rolling ten answers as the
  * actual promotion rule in engine.record; no new level or stale estimate. */
+const ANALYSIS_TYPES={
+ pitch:'Enkeltnoder',sequence:'Tonerækker',chord:'Akkorder',tap:'Bank rytmen',
+ 'bar-rhythm':'Rytme i takter','bar-notes':'Toner i takter',
+ 'two-hands':'Samtidige anslag','interval-quality':'Intervalkvalitet'
+};
+function taskKind(a){
+ if(a.kind&&ANALYSIS_TYPES[a.kind])return a.kind;
+ if(a.kind==='choice'&&a.note)return 'pitch';
+ if(a.note)return 'pitch';
+ return null;
+}
+function goodTime(a){return a.correct&&Number.isFinite(a.ms)&&a.ms>0&&(Number.isFinite(a.equivalentMs)?a.equivalentMs>0:true);}
+function seconds(ms){return (ms/1000).toLocaleString('da-DK',{minimumFractionDigits:1,maximumFractionDigits:1});}
+function speedValue(a){return Number.isFinite(a.equivalentMs)?a.equivalentMs:a.ms;}
+/* Compare like for like: identical skill, question kind and level.
+ * Two non-overlapping sets of eight. No tap-time comparison: user timing includes
+ * count-in, playing and audio interaction, not just reading. */
+function performanceTrends(s,skillFilter=null){
+ const sets=new Map();
+ for(const a of s.attempts||[]){
+  const kind=taskKind(a);if(!kind||a.kind==='tap'||kind==='tap'||(skillFilter&&a.skill!==skillFilter))continue;
+  if(!Number.isInteger(a.level)||!s.skills?.[a.skill]||a.level!==s.skills[a.skill].level)continue;
+  const id=a.skill+'|'+kind+'|'+a.level;if(!sets.has(id))sets.set(id,[]);sets.get(id).push(a);
+ }
+ const out=[];
+ for(const [id,items] of sets){
+  if(items.length<16)continue;
+  const [skill,kind,levelString]=id.split('|'),early=items.slice(0,8),late=items.slice(-8);
+  const correctEarly=early.filter(a=>a.correct).length,correctLate=late.filter(a=>a.correct).length;
+  const earlyTime=E.median(early.filter(goodTime).map(speedValue)),lateTime=E.median(late.filter(goodTime).map(speedValue));
+  let category='stabil',message='',changePercent=null;
+  if(earlyTime!==null&&lateTime!==null&&earlyTime>0)changePercent=Math.round((lateTime/earlyTime-1)*100);
+  const changeAccuracy=correctLate-correctEarly;
+  if(changePercent!==null&&changePercent<=-10){
+   category=changeAccuracy<=-2?'tradeoff':'speed';
+   message=changeAccuracy<=-2?'Du læser hurtigere, men har samtidig flere fejl.':'Du læser hurtigere, uden en tydelig nedgang i antallet af rigtige.';
+  }else if(changeAccuracy>=2){category='precision';message='Flere af dine svar er rigtige. Det er et godt tegn på øget sikkerhed.';}
+  else if(changePercent!==null&&changePercent>=15){category='slowdown';message='Svarene tager længere tid. Se om de nye opgaver kræver mere afkodning.';}
+  else message='Der er endnu ingen tydelig forskel mellem den tidlige og den seneste gruppe.';
+  out.push({skill,kind,label:ANALYSIS_TYPES[kind],level:Number(levelString),count:items.length,
+   earlyCorrect:correctEarly,lateCorrect:correctLate,earlyMs:earlyTime,lateMs:lateTime,
+   changePercent,changeAccuracy,category,message});
+ }
+ return out.sort((a,b)=>(b.category==='tradeoff'?2:b.category==='speed'?1:0)-(a.category==='tradeoff'?2:a.category==='speed'?1:0)||b.count-a.count);
+}
 function readiness(s,skill){
- const record=s.skills?.[skill],level=record?.level||1,maxLevel=4;
+ const record=s.skills?.[skill],level=record?.level||1,maxLevel=E.MAX_LEVEL;
  const attempts=(record?.window||[]).filter(a=>a.level===level).slice(-10);
  const answered=attempts.length,correct=attempts.filter(a=>a.correct).length;
- const speeds=attempts.filter(a=>a.correct).map(a=>Number.isFinite(a.equivalentMs)?a.equivalentMs:a.ms);
+ const speeds=attempts.filter(a=>a.correct).map(speedValue);
  const speed=E.median(speeds),limit=E.LIMITS[skill];
  const more=Math.max(0,10-answered),missing=Math.max(0,9-correct);
  const speedReady=speed!==null&&speed<=limit;
+ const last=performanceTrends(s,skill).find(t=>t.category==='tradeoff'||t.category==='speed'||t.category==='precision');
  let status;
- if(level===maxLevel)status='Højeste nuværende niveau. Målet er større sikkerhed og flere tonearter.';
- else if(answered<10)status='Du mangler '+more+' '+(more===1?'svar':'svar')+' til den første fulde vurdering på dette niveau.';
- else if(correct<9)status='Du skal op på mindst 9 rigtige blandt de seneste 10 svar. Nye svar erstatter de ældste.';
- else if(!speedReady)status='Præcisionen er på plads. Nu skal du læse hurtigere uden at miste sikkerhed.';
- else status='Kravene er opfyldt. Niveauet justeres ved næste registrerede svar.';
+ if(level===maxLevel)status='Niveau '+maxLevel+' er det sidste trin i denne version. Udfordringen er nu længere passager og sikker læsning i nye tonearter.';
+ else if(answered<10)status='Niveau '+(level+1)+' kræver 10 aktuelle svar med mindst 9 rigtige. Du har '+answered+' svar og '+correct+' rigtige i dette vindue.'+(speed!==null?' Medianen er '+seconds(speed)+' sek. mod kravet '+seconds(limit)+' sek.':'');
+ else if(correct<9)status='Du har '+correct+' af 10 rigtige. Målet er mindst 9; nye svar erstatter de ældste i vinduet.'+(last?.category==='tradeoff'?' Din hastighed er steget, men antallet af fejl er også steget.':'');
+ else if(!speedReady)status='Du har '+correct+' af 10 rigtige. Medianen er '+seconds(speed)+' sek. mod kravet '+seconds(limit)+' sek. pr. afkodet enhed.'+(last?.category==='tradeoff'?' Pas på, at højere tempo ikke koster præcision.':'');
+ else status='Kravene for niveau '+(level+1)+' er opfyldt. Niveauet opdateres ved næste registrerede svar.';
  return {skill,level,maxLevel,answered,correct,more,missing,medianMs:speed,limitMs:limit,speedReady,status,complete:level===maxLevel,answerProgress:Math.round(answered*10)};
 }
 function keyCoverage(s){
@@ -209,5 +255,5 @@ function nextGuidance(s,entries=[],now=Date.now()){
 }
 
 E.question=question;E.group=group;E.record=record;E.passageQuestions=passageQuestions;E.validateScore=validateScore;
-return {DAY,INTERVAL_DAYS,parseLine,fromSpec,validateScore,concept,migrate,dueReviews,question,group,record,sequenceQuestion,melodyQuestion,chordQuestion,intervalQuality,tapQuestion,gradeTaps,tapTargets,pulseInfo,timeline,addPractice,nextPiece,localDay,route,markRoute,nextGuidance,readiness,keyCoverage};
+return {DAY,INTERVAL_DAYS,parseLine,fromSpec,validateScore,concept,migrate,dueReviews,question,group,record,sequenceQuestion,melodyQuestion,chordQuestion,intervalQuality,tapQuestion,gradeTaps,tapTargets,pulseInfo,timeline,addPractice,nextPiece,localDay,route,markRoute,nextGuidance,readiness,keyCoverage,performanceTrends,taskKind};
 });
