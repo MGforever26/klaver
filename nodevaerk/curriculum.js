@@ -85,7 +85,7 @@ function buildScore(level,r,activeClef='treble',count=1,otherHand=true,requested
  }
  if(level>=7&&count>1)for(let j=0;j<count-1;j++){
    const prev=measures[j][activeClef],next=measures[j+1][activeClef];
-   if(prev.length&&next.length&&!prev.at(-1).rest&&!next[0].rest&&r()<.42){
+   if(prev.length&&next.length>1&&!prev.at(-1).rest&&!next[0].rest&&r()<.42){
     const last=prev.at(-1);last.tie=true;
     const nextDuration={duration:next[0].duration,dots:next[0].dots};
     next[0]={...E.fromDiatonic(E.diatonic(last)),...nextDuration};
