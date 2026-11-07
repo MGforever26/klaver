@@ -67,7 +67,7 @@ function validState(s){return !!(s&&s.version===1&&Array.isArray(s.attempts)&&s.
 function record(state,q,answer,ms,now=Date.now()){
  const correct=String(answer)===String(q.answer);const n=q.type==='pitch'?targetNote(q):null;
  const units=q.units|| (q.kind==='bar-notes'?Math.max(1,((q.score.measures[q.score.measures.length-1]||{})[q.prompt.includes('højre')?'treble':'bass']||[]).filter(n=>!n.rest).length):q.kind==='bar-rhythm'?Math.max(1,(q.target?.index||0)+1):q.kind==='two-hands'?4:1);
- const attempt={skill:q.skill,level:q.level,correct,ms:Math.max(0,Math.min(ms,180000)),at:now,id:q.id,note:n?n.clef+':'+n.letter+n.octave+':'+n.alter:null,answer:String(answer),expected:String(q.answer)};
+ const attempt={skill:q.skill,level:q.level,correct,ms:Math.max(0,Math.min(ms,180000)),at:now,id:q.id,note:n?n.clef+':'+n.letter+n.octave+':'+n.alter:null,answer:String(answer),expected:String(q.answer),key:q.score?.key||null,tonality:q.score?.tonality||null,meter:q.score?.time||null};
  attempt.equivalentMs=attempt.ms/units;
  state.attempts.push(attempt);
  state.totals.answered++;if(correct)state.totals.correct++;
