@@ -28,6 +28,7 @@ Object.assign(KEY_NAMES,{
 const SKILLS={treble:'G-nøgle',bass:'F-nøgle',accidental:'Fortegn',rhythm:'Rytme',interval:'Intervaller',passage:'Samlet læsning'};
 const DUR={w:4,h:2,q:1,'8':.5,'16':.25};
 const DURATION_NAMES={w:'Helnode',h:'Halvnode',q:'Fjerdedel','8':'Ottendedel','16':'Sekstendedel'};
+const MAX_LEVEL=8;
 const LIMITS={treble:6500,bass:6500,accidental:10000,rhythm:10000,interval:12000,passage:12000};
 function parse(s,d='q',extra={}){const m=/^([A-G])([#bn]?)([1-6])$/.exec(s);if(!m)throw Error('Ugyldig tone: '+s);return {letter:m[1],octave:+m[3],acc:m[2]||null,duration:d,dots:0,...extra};}
 function rest(d='q'){return {rest:true,duration:d,dots:0};}
@@ -63,17 +64,17 @@ function durationLabel(n){return (n.dots?'Punkteret ':'')+(n.rest?({w:'helpause'
 function beatLabel(n){return String(n).replace('.25','¼').replace('.5','½').replace('.75','¾').replace(/^0/,'');}
 function median(xs){if(!xs.length)return null;const s=xs.slice().sort((a,b)=>a-b),i=Math.floor(s.length/2);return s.length%2?s[i]:(s[i-1]+s[i])/2;}
 function newState(){return {version:1,attempts:[],totals:{answered:0,correct:0},skills:Object.fromEntries(Object.keys(SKILLS).map(k=>[k,{level:1,window:[],changes:[]}])) ,mistakes:[],groups:0,completedPieces:{},settings:{focus:'mixed',tempo:64},session:null};}
-function validState(s){return !!(s&&s.version===1&&Array.isArray(s.attempts)&&s.skills&&Object.keys(SKILLS).every(k=>s.skills[k]&&Number.isInteger(s.skills[k].level)&&s.skills[k].level>=1&&s.skills[k].level<=4&&Array.isArray(s.skills[k].window))&&Array.isArray(s.mistakes)&&s.totals&&Number.isFinite(s.totals.answered)&&Number.isFinite(s.totals.correct)&&Number.isFinite(s.groups)&&s.completedPieces&&s.settings);}
+function validState(s){return !!(s&&s.version===1&&Array.isArray(s.attempts)&&s.skills&&Object.keys(SKILLS).every(k=>s.skills[k]&&Number.isInteger(s.skills[k].level)&&s.skills[k].level>=1&&s.skills[k].level<=MAX_LEVEL&&Array.isArray(s.skills[k].window))&&Array.isArray(s.mistakes)&&s.totals&&Number.isFinite(s.totals.answered)&&Number.isFinite(s.totals.correct)&&Number.isFinite(s.groups)&&s.completedPieces&&s.settings);}
 function record(state,q,answer,ms,now=Date.now()){
  const correct=String(answer)===String(q.answer);const n=q.type==='pitch'?targetNote(q):null;
  const units=q.units|| (q.kind==='bar-notes'?Math.max(1,((q.score.measures[q.score.measures.length-1]||{})[q.prompt.includes('højre')?'treble':'bass']||[]).filter(n=>!n.rest).length):q.kind==='bar-rhythm'?Math.max(1,(q.target?.index||0)+1):q.kind==='two-hands'?4:1);
- const attempt={skill:q.skill,level:q.level,correct,ms:Math.max(0,Math.min(ms,180000)),at:now,id:q.id,note:n?n.clef+':'+n.letter+n.octave+':'+n.alter:null,answer:String(answer),expected:String(q.answer),key:q.score?.key||null,tonality:q.score?.tonality||null,meter:q.score?.time||null};
+ const attempt={skill:q.skill,level:q.level,correct,ms:Math.max(0,Math.min(ms,180000)),at:now,id:q.id,note:n?n.clef+':'+n.letter+n.octave+':'+n.alter:null,answer:String(answer),expected:String(q.answer),key:q.score?.key||null,tonality:q.score?.tonality||null,meter:q.score?.time||null,kind:q.kind||q.type,units,clef:q.clef||q.target?.clef||null};
  attempt.equivalentMs=attempt.ms/units;
  state.attempts.push(attempt);
  state.totals.answered++;if(correct)state.totals.correct++;
  const sk=state.skills[q.skill];sk.window.push(attempt);if(sk.window.length>24)sk.window.shift();
  const recent=sk.window.filter(a=>a.level===sk.level).slice(-10);let change=0;
- if(recent.length===10){const hits=recent.filter(a=>a.correct),speed=median(hits.map(a=>Number.isFinite(a.equivalentMs)?a.equivalentMs:a.ms));if(hits.length>=9&&speed<=LIMITS[q.skill]&&sk.level<4)change=1;else if(hits.length<=5&&sk.level>1)change=-1;}
+ if(recent.length===10){const hits=recent.filter(a=>a.correct),speed=median(hits.map(a=>Number.isFinite(a.equivalentMs)?a.equivalentMs:a.ms));if(hits.length>=9&&speed<=LIMITS[q.skill]&&sk.level<MAX_LEVEL)change=1;else if(hits.length<=5&&sk.level>1)change=-1;}
  if(change){sk.level+=change;sk.changes.push({level:sk.level,at:now});sk.window=[];}
  state.mistakes=state.mistakes.filter(x=>x.q.id!==q.id);
  if(!correct)state.mistakes.push({q:JSON.parse(JSON.stringify(q)),due:state.groups+1});
@@ -85,14 +86,14 @@ function shuffle(xs,r){const a=xs.slice();for(let i=a.length-1;i>0;i--){const j=
 function scoreFor(notes,clef='treble',key='C'){return {key,time:null,measures:[{treble:clef==='treble'?notes:[],bass:clef==='bass'?notes:[]}]};}
 function makePitch(skill,level,r){
  const clef=skill==='bass'?'bass':skill==='treble'?'treble':pick(['treble','bass'],r);
- const ranges={treble:[[30,35],[28,39],[26,42],[25,43]],bass:[[21,25],[18,28],[16,30],[15,31]]};
+ const ranges={treble:[[30,35],[28,39],[26,42],[25,43],[25,43],[24,44],[23,44],[22,44]],bass:[[21,25],[18,28],[16,30],[15,31],[14,31],[13,32],[12,33],[11,33]]};
  const [lo,hi]=ranges[clef][level-1];let n=fromDiatonic(lo+Math.floor(r()*(hi-lo+1)));let score=scoreFor([n],clef),target={measure:0,clef,index:0},detail='Læs tonehovedets placering. Du skal kun svare med tonenavnet.';
  if(skill==='accidental'){
   if(level===1){n.acc=pick(['#','b'],r);detail='Læs både tonehovedet og fortegnet lige foran det.';}
   if(level===2){score.key=pick(['G','F'],r);n=parse(score.key==='G'?'F4':'B3');if(clef==='bass')n.octave=3;if(r()<.55)n.acc='n';score.measures[0][clef]=[n];detail='Se på de faste fortegn ved nøglen. Et opløsningstegn ophæver dem for tonen.';}
   if(level>=3){
-   const key=level===4?pick(['G','D','F','Bb','Eb'],r):'C';score.key=key;
-   const letters=level===4?Object.keys(KEYS[key]):LETTERS; n=parse(pick(letters,r)+(clef==='bass'?3:4));n.acc=level===4?'n':pick(['#','b'],r);
+   const key=level>=4?pick(['G','D','F','Bb','Eb'],r):'C';score.key=key;
+   const letters=level>=4?Object.keys(KEYS[key]):LETTERS; n=parse(pick(letters,r)+(clef==='bass'?3:4));n.acc=level>=4?pick(['n','#','b'],r):pick(['#','b'],r);
    const mode=level===3?'carry':pick(['carry','bar','octave','staff'],r);
    const again={...n,acc:null};const filler=fromDiatonic(diatonic(n)+2);
    if(mode==='bar'){score.time='4/4';score.measures=[{treble:[],bass:[],[clef]:[{...n,duration:'w'}]},{treble:[],bass:[],[clef]:[{...again,duration:'w'}]}];target.measure=1;target.index=0;detail='Du er i en ny takt. Det løse fortegn fra den forrige takt gælder ikke længere.';}
@@ -131,6 +132,6 @@ function group(state,focus='mixed',seed=Date.now()){
  for(const s of skills){if(qs.length===5)break;let q;for(let i=0;i<20;i++){q=question(s,state.skills[s].level,r);if(!qs.some(x=>x.id===q.id))break;}qs.push(q);}return qs;
 }
 function validateScore(s){const errors=[];if(!KEYS[s.key])errors.push('Ukendt toneart');const expected=s.time?+s.time.split('/')[0]*4/(+s.time.split('/')[1]):null;s.measures.forEach((m,mi)=>{for(const clef of ['treble','bass']){const ns=m[clef]||[];if(expected&&ns.length&&Math.abs(ns.reduce((x,n)=>x+beats(n),0)-expected)>.0001)errors.push(`Takt ${mi+1}, ${clef}: forkert taktlængde`);ns.forEach(n=>{if(!n.rest&&(!LETTERS.includes(n.letter)||!Number.isInteger(n.octave)))errors.push('Ugyldig tone');});}});return errors;}
-return {pitches,LETTERS,NATURAL,KEYS,KEY_NAMES,SKILLS,DUR,LIMITS,PIECES,parse,rest,diatonic,fromDiatonic,staffStep,beats,spelling,pitchId,midi,resolveMeasure,resolveScore,targetNote,intervalNumber,durationLabel,beatLabel,median,newState,validState,record,rng,question,group,passageQuestions,pieceTargets,validateScore};
+return {pitches,LETTERS,NATURAL,KEYS,KEY_NAMES,SKILLS,DUR,LIMITS,MAX_LEVEL,PIECES,parse,rest,diatonic,fromDiatonic,staffStep,beats,spelling,pitchId,midi,resolveMeasure,resolveScore,targetNote,intervalNumber,durationLabel,beatLabel,median,newState,validState,record,rng,question,group,passageQuestions,pieceTargets,validateScore};
 });
 
