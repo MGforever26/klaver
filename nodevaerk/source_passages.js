@@ -455,7 +455,7 @@ specs.push(...[
     },
     "measures": [
       {
-        "treble": "E5:16 D#5:16 E5:16 B4:16 D5:16 C5:16",
+        "treble": "E5:16 D#5:16 E5:16 B4:16 Dn5:16 C5:16",
         "bass": "r:8 r:8 r:8"
       },
       {
@@ -492,7 +492,7 @@ specs.push(...[
     },
     "measures": [
       {
-        "treble": "E5:16 D#5:16 E5:16 B4:16 D5:16 C5:16",
+        "treble": "E5:16 D#5:16 E5:16 B4:16 Dn5:16 C5:16",
         "bass": "r:8 r:8 r:8"
       },
       {
