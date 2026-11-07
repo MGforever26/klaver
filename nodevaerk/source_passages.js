@@ -2,7 +2,7 @@
  * These are distinct windows, not copies of the already shipped excerpts. */
 (function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory(require('./engine.js'),require('./learning.js'),require('./advanced.js'));else factory(root.NV,root.NV.learning);})(typeof globalThis!=='undefined'?globalThis:this,function(E,L){
 'use strict';
-const groups=[["satie-gymno","Gymnopédie nr. 1","satie-gymno-"],["burgmuller-arabesque","Arabesque","burgmuller-arabesque-"],["mozart-k2","Mozart K. 2","mozart-k2-"],["petzold-menuet","Menuet i G","petzold-menuet-"],["beethoven-furelise","Für Elise","beethoven-furelise-"],["chopin-prelude28-4","Præludium op. 28 nr. 4","chopin-prelude28-4-"]];
+const groups=[["satie-gymno","Gymnopédie nr. 1","satie-gymno-"],["burgmuller-arabesque","Arabesque","burgmuller-arabesque-"],["mozart-k2","Mozart K. 2","mozart-k2-"],["petzold-menuet","Menuet i G","petzold-menuet-"],["beethoven-furelise","Für Elise","beethoven-furelise-"],["chopin-prelude28-4","Præludium op. 28 nr. 4","chopin-prelude28-4-"],["mozart-turkish","Turkish March","mozart-turkish-"]];
 for(const p of E.PIECES){for(const [id,name,prefix] of groups)if(p.id.startsWith(prefix)){p.workId=id;p.workName=name;}}
 const specs=[
   {
@@ -576,6 +576,76 @@ specs.push(...[
       {
         "treble": "A4:hd G#4:q",
         "bass": "D3+F3+C4:8 D3+F3+C4:8 D3+F3+C4:8 D3+F3+C4:8 D3+F3+B3:8 D3+F3+B3:8 D3+F3+B3:8 D3+F3+B3:8"
+      }
+    ]
+  }
+]);
+specs.push(...[
+  {
+    "id": "mozart-turkish-t1-4",
+    "title": "Turkish March · Temaets første fire takter",
+    "subtitle": "Takt 1–4 efter optakten · Hurtig melodilæsning",
+    "level": 4,
+    "key": "Am",
+    "time": "2/4",
+    "tip": "Melodien begynder efter en kort optakt. De mange korte toner bliver lettere, når du genkender bevægelsen omkring C og E.",
+    "workId": "mozart-turkish",
+    "workName": "Turkish March",
+    "composer": "W. A. Mozart",
+    "source": {
+      "url": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=108",
+      "title": "Rondo Alla Turca, KV 331, første fire fulde takter",
+      "license": "Public Domain",
+      "adaptation": "Transskriberet fra Mutopias frit anvendelige nodeudgave. Optakten står uden for denne øvepassage; ornamenter og artikulation er udeladt. De spilles i den originale tonerækkefølge."
+    },
+    "measures": [
+      {
+        "treble": "C5:8 r:8 D5:16 C5:16 B4:16 C5:16",
+        "bass": "A2:8 C4+E4:8 C4+E4:8 C4+E4:8"
+      },
+      {
+        "treble": "E5:8 r:8 F5:16 E5:16 D#5:16 E5:16",
+        "bass": "A2:8 C4+E4:8 C4+E4:8 C4+E4:8"
+      },
+      {
+        "treble": "B4:16 A4:16 G#4:16 A4:16 B4:16 A4:16 G#4:16 A4:16",
+        "bass": "A2:8 C4+E4:8 A2:8 C4+E4:8"
+      },
+      {
+        "treble": "C6:q A5:8 C6:8",
+        "bass": "A2:8 C4+E4:8 C4+E4:8 C4+E4:8"
+      }
+    ]
+  },
+  {
+    "id": "mozart-turkish-t5-7",
+    "title": "Turkish March · Svar med akkorder",
+    "subtitle": "Takt 5–7 · Melodi og dobbeltgreb",
+    "level": 5,
+    "key": "Am",
+    "time": "2/4",
+    "tip": "Højre hånd skifter nu fra enkelttoner til dobbeltgreb. Fokusér på Fis–A og E–G i den ene hånd.",
+    "workId": "mozart-turkish",
+    "workName": "Turkish March",
+    "composer": "W. A. Mozart",
+    "source": {
+      "url": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=108",
+      "title": "Rondo Alla Turca, KV 331, næste tre fulde takter",
+      "license": "Public Domain",
+      "adaptation": "Transskriberet fra Mutopias frit anvendelige nodeudgave. Små forsiringer, fraseringsbuer og artikulation er udeladt; hovedtonerne og akkorderne følger kilden."
+    },
+    "measures": [
+      {
+        "treble": "B5:8 F#5+A5:8 E5+G5:8 F#5+A5:8",
+        "bass": "E3:8 B3+E4:8 B3+E4:8 B3+E4:8"
+      },
+      {
+        "treble": "B5:8 F#5+A5:8 E5+G5:8 F#5+A5:8",
+        "bass": "E3:8 B3+E4:8 B3+E4:8 B3+E4:8"
+      },
+      {
+        "treble": "B5:8 F#5+A5:8 E5+G5:8 D#5+F#5:8",
+        "bass": "E3:8 B3+E4:8 B2:8 B2:8"
       }
     ]
   }
