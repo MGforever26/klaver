@@ -39,17 +39,25 @@ function sequenceQuestion(score,clef,skill,level,measureIndices=null){
  const indices=measureIndices||score.measures.map((_,i)=>i),resolved=E.resolveScore(score),tokens=[],labels=[],groups=[];
  for(const mi of indices){let count=0;for(const n of resolved[mi][clef])if(!n.rest&&!n.tied)for(const p of n.tones){tokens.push(p.id);labels.push(p.name);count++;}groups.push({measure:mi,count});}
  return identify({skill,level,type:'sequence',kind:'sequence',score,target:null,clef,groups,expectedTokens:tokens,units:tokens.length,
-  prompt:'Læs '+(indices.length>1?'begge takter':'hele takten')+' i '+(clef==='treble'?'højre':'venstre')+' hånd',
+  prompt:'Læs '+(indices.length>1?(indices.length===2&&score.measures.length>2?'takt '+(indices[0]+1)+' og '+(indices[1]+1):'de '+indices.length+' takter'):'hele takten')+' i '+(clef==='treble'?'højre':'venstre')+' hånd',
   detail:'Tilføj tonerne i rækkefølge. Spring pauser og toner, der er bundet fra den foregående tone, over. Akkorder læses nedefra.',
   answer:JSON.stringify(tokens),answerLabel:labels.join(' · '),explanation:labels.join(' · ')+'. Læs trin, spring og gentagelser fra venstre mod højre. En bindebue forlænger tonen uden nyt anslag.'});
 }
-function melodyQuestion(level,r,skill='passage',clef=null,tonality=null){clef=clef||pick(['treble','bass'],r);const score=C.buildScore(level,r,clef,level>=3?2:1,true,tonality);return sequenceQuestion(score,clef,skill,level);}
+function melodyQuestion(level,r,skill='passage',clef=null,tonality=null){
+ clef=clef||pick(['treble','bass'],r);
+ const count=level>=8?6:level>=7?5:level>=6?4:level>=5?3:level>=3?2:1;
+ const score=C.buildScore(level,r,clef,count,true,tonality);
+ const indices=level>=5?[count-2,count-1]:null;
+ const q=sequenceQuestion(score,clef,skill,level,indices);
+ if(level>=5)q.detail='Se først de forudgående takter som musikalsk sammenhæng. Læs derefter de to angivne takter nedefra og op ved akkorder, fra venstre mod højre i melodien. Spring pauser og bundne anslag over.';
+ return q;
+}
 function chordQuestion(level,r,requestedTonality=null){
  const clef=pick(['treble','bass'],r),t=C.selectTonality(level,r,requestedTonality),key=t.key,rootIndex=E.LETTERS.indexOf(t.tonic);
  const letter=pick([0,3,4],r);
  const rootLetter=E.LETTERS[(rootIndex+letter)%7],octave=clef==='bass'?2:4,root=E.diatonic(E.parse(rootLetter+octave));
- let pts=(level===1?[0,pick([2,4],r)]:level===4&&r()<.5?[0,2,4,6]:[0,2,4]).map(i=>E.fromDiatonic(root+i));
- const inversion=level>=3?Math.floor(r()*3):0;for(let i=0;i<inversion;i++){const first=pts.shift();pts.push({...first,octave:first.octave+1});}
+ let pts=(level===1?[0,pick([2,4],r)]:level>=7&&r()<.25?[0,2,4,6,8]:level>=4&&r()<.55?[0,2,4,6]:[0,2,4]).map(i=>E.fromDiatonic(root+i));
+ const inversion=level>=3?Math.floor(r()*Math.min(pts.length,level>=5?5:3)):0;for(let i=0;i<inversion;i++){const first=pts.shift();pts.push({...first,octave:first.octave+1});}pts.sort((a,b)=>E.diatonic(a)-E.diatonic(b));
  const n={...pts[0],duration:'w',chord:pts.slice(1)},score={key,tonality:t.id,time:'4/4',measures:[{treble:clef==='treble'?[n]:[E.rest('w')],bass:clef==='bass'?[n]:[E.rest('w')]}]};
  const q=sequenceQuestion(score,clef,'interval',level);q.kind='chord';q.prompt='Hvilke toner står i grebet?';q.detail='Læs alle tonerne nedefra og op. Tilføj én tone ad gangen.';q.target={measure:0,clef,index:0};q.explanation=q.answerLabel+'. Tonerne spilles samtidig. Se afstanden mellem dem som et samlet greb.';return identify(q);
 }
@@ -66,7 +74,14 @@ const TAP_PATTERNS={
  3:[['4/4','G4:8 G4:q G4:8 G4:q r:q'],['6/8','G4:8 r:8 G4:8 G4:q G4:8'],['12/8','G4:qd G4:q G4:8 G4:qd G4:qd'],['4/4','G4:q G4:q~ G4:q G4:q']],
  4:[['4/4','G4:16 G4:16 G4:8 G4:qd G4:8 G4:q'],['4/4','G4:8 G4:q~ G4:8 r:8 G4:8 G4:q'],['6/8','G4:16 G4:16 G4:8 G4:8 G4:qd'],['12/8','G4:q G4:8 G4:8 G4:q~ G4:qd G4:qd']]
 };
-function tapQuestion(level,r){const [time,line]=pick(TAP_PATTERNS[level],r),notes=parseLine(line),score={key:'C',time,measures:[{treble:notes,bass:[]}]};
+function tapQuestion(level,r){
+ if(level>=5){const score=C.buildScore(level,r,'treble',level>=7?2:1,false);
+  return identify({skill:'rhythm',level,type:'tap',kind:'tap',score,target:null,
+   prompt:'Bank rytmen over '+score.measures.length+' '+(score.measures.length===1?'takt':'takter'),
+   detail:'Læs alle varigheder og tæl underdelingerne. Bank ved nye anslag, også efter pauser. Bindebuer forlænger tonen uden nyt anslag.',
+   answer:'ok',answerLabel:'Rytmen ligger i pulsen',explanation:'Hør hovedslagene, og bevar pulsen gennem pauser og bindebuer.',units:4,tempo:level>=7?40:48});
+ }
+ const [time,line]=pick(TAP_PATTERNS[level],r),notes=parseLine(line),score={key:'C',time,measures:[{treble:notes,bass:[]}]};
  return identify({skill:'rhythm',level,type:'tap',kind:'tap',score,target:null,prompt:'Bank rytmen i takt',detail:'Læs først. Start optællingen, og bank kun ved nye anslag. Hold pulsen gennem pauser og bindebuer.',answer:'ok',answerLabel:'Rytmen ligger i pulsen',explanation:'Tæl underdelingerne, og lad pauserne få deres fulde plads.',units:4,tempo:level<=2?56:48});
 }
 function rhythmAdvanced(level,r){const q=tapQuestion(level,r);q.type='choice';q.kind='bar-rhythm';let at=0;const hits=[];for(const[nindex,n]of E.resolveScore(q.score)[0].treble.entries()){if(!n.rest&&!n.tied)hits.push({index:nindex,at});at+=n.beats;}const hit=pick(hits.slice(1).length?hits.slice(1):hits,r);q.target={measure:0,clef:'treble',index:hit.index};
@@ -77,11 +92,11 @@ function rhythmAdvanced(level,r){const q=tapQuestion(level,r);q.type='choice';q.
 function question(skill,level,r,requestedTonality=null){
  if(skill==='chords')return chordQuestion(level,r,requestedTonality);
  if(skill==='tap')return tapQuestion(level,r);
- if(skill==='passage')return r()<.25?C.together(level,r,requestedTonality):melodyQuestion(level,r,'passage',null,requestedTonality);
- if((skill==='treble'||skill==='bass')&&level>=2&&r()<.45)return melodyQuestion(level,r,skill,skill,requestedTonality);
- if(skill==='interval'&&level===4)return r()<.35?chordQuestion(level,r,requestedTonality):intervalQuality(level,r);
+ if(skill==='passage')return r()<(level>=5?.42:.25)?C.together(level,r,requestedTonality):melodyQuestion(level,r,'passage',null,requestedTonality);
+ if((skill==='treble'||skill==='bass')&&level>=2&&r()<(level>=5?.7:.45))return melodyQuestion(level,r,skill,skill,requestedTonality);
+ if(skill==='interval'&&level>=4)return r()<(level>=6?.5:.35)?chordQuestion(level,r,requestedTonality):intervalQuality(level,r);
  if(skill==='interval'&&level>=2&&r()<.25)return chordQuestion(level,r,requestedTonality);
- if(skill==='rhythm'&&level===4)return rhythmAdvanced(level,r);
+ if(skill==='rhythm'&&level>=4)return rhythmAdvanced(level,r);
  return previousQuestion(skill,level,r,requestedTonality);
 }
 function acceptsFocus(q,focus){return focus==='mixed'||focus==='review'||(focus==='chords'?q.kind==='chord':focus==='tap'?q.kind==='tap':q.skill===focus);}
@@ -133,23 +148,77 @@ function gradeTaps(q,taps,tempo){
 function addPractice(s,entry,now=Date.now()){
  migrate(s,now);const run={...entry,at:now,id:'play:'+now+':'+s.learning.practice.length};s.learning.practice.push(run);return run;
 }
-function nextPiece(s,pieces=E.PIECES){migrate(s);const level=Math.max(1,Math.min(s.skills.treble.level,s.skills.bass.level));const practiced=new Set(s.learning.practice.map(x=>x.pieceId));return pieces.find(p=>p.level<=level&&!practiced.has(p.id))||pieces.find(p=>p.level<=Math.min(4,level+1)&&!practiced.has(p.id))||pieces[0];}
+function nextPiece(s,pieces=E.PIECES){migrate(s);
+ const level=Math.max(1,Math.min(s.skills.treble.level,s.skills.bass.level)),practiced=new Set(s.learning.practice.map(x=>x.pieceId));
+ const candidates=pieces.filter(p=>!practiced.has(p.id));
+ candidates.sort((a,b)=>{
+  const cost=p=>Math.abs(p.level-level)+(p.level>level?.5:0);
+  return cost(a)-cost(b)||b.level-a.level;
+ });
+ return candidates[0]||pieces.find(p=>p.level===level)||pieces[0];
+}
 /* Progress is calculated from the same rolling ten answers as the
  * actual promotion rule in engine.record; no new level or stale estimate. */
+const ANALYSIS_TYPES={
+ pitch:'Enkeltnoder',sequence:'Tonerækker',chord:'Akkorder',tap:'Bank rytmen',
+ 'bar-rhythm':'Rytme i takter','bar-notes':'Toner i takter',
+ 'two-hands':'Samtidige anslag','interval-quality':'Intervalkvalitet'
+};
+function taskKind(a){
+ if(a.kind&&ANALYSIS_TYPES[a.kind])return a.kind;
+ if(a.kind==='choice'&&a.note)return 'pitch';
+ if(a.note)return 'pitch';
+ return null;
+}
+function goodTime(a){return a.correct&&Number.isFinite(a.ms)&&a.ms>0&&(Number.isFinite(a.equivalentMs)?a.equivalentMs>0:true);}
+function seconds(ms){return (ms/1000).toLocaleString('da-DK',{minimumFractionDigits:1,maximumFractionDigits:1});}
+function speedValue(a){return Number.isFinite(a.equivalentMs)?a.equivalentMs:a.ms;}
+/* Compare like for like: identical skill, question kind and level.
+ * Two non-overlapping sets of eight. No tap-time comparison: user timing includes
+ * count-in, playing and audio interaction, not just reading. */
+function performanceTrends(s,skillFilter=null){
+ const sets=new Map();
+ for(const a of s.attempts||[]){
+  const kind=taskKind(a);if(!kind||a.kind==='tap'||kind==='tap'||(skillFilter&&a.skill!==skillFilter))continue;
+  if(!Number.isInteger(a.level)||!s.skills?.[a.skill]||a.level!==s.skills[a.skill].level)continue;
+  const id=a.skill+'|'+kind+'|'+a.level+'|'+(a.clef||'both');if(!sets.has(id))sets.set(id,[]);sets.get(id).push(a);
+ }
+ const out=[];
+ for(const [id,items] of sets){
+  if(items.length<16)continue;
+  const [skill,kind,levelString,clef]=id.split('|'),early=items.slice(0,8),late=items.slice(-8);
+  const correctEarly=early.filter(a=>a.correct).length,correctLate=late.filter(a=>a.correct).length;
+  const earlyTime=E.median(early.filter(goodTime).map(speedValue)),lateTime=E.median(late.filter(goodTime).map(speedValue));
+  let category='stabil',message='',changePercent=null;
+  if(earlyTime!==null&&lateTime!==null&&earlyTime>0)changePercent=Math.round((lateTime/earlyTime-1)*100);
+  const changeAccuracy=correctLate-correctEarly;
+  if(changePercent!==null&&changePercent<=-10){
+   category=changeAccuracy<=-2?'tradeoff':'speed';
+   message=changeAccuracy<=-2?'Du læser hurtigere, men har samtidig flere fejl.':'Du læser hurtigere, uden en tydelig nedgang i antallet af rigtige.';
+  }else if(changeAccuracy>=2){category='precision';message='Flere af dine svar er rigtige. Det er et godt tegn på øget sikkerhed.';}
+  else if(changePercent!==null&&changePercent>=15){category='slowdown';message='Svarene tager længere tid. Se om de nye opgaver kræver mere afkodning.';}
+  else message='Der er endnu ingen tydelig forskel mellem den tidlige og den seneste gruppe.';
+  out.push({skill,kind,clef,label:ANALYSIS_TYPES[kind]+(clef==='treble'?' i G-nøgle':clef==='bass'?' i F-nøgle':''),level:Number(levelString),count:items.length,
+   earlyCorrect:correctEarly,lateCorrect:correctLate,earlyMs:earlyTime,lateMs:lateTime,
+   changePercent,changeAccuracy,category,message});
+ }
+ return out.sort((a,b)=>(b.category==='tradeoff'?2:b.category==='speed'?1:0)-(a.category==='tradeoff'?2:a.category==='speed'?1:0)||b.count-a.count);
+}
 function readiness(s,skill){
- const record=s.skills?.[skill],level=record?.level||1,maxLevel=4;
+ const record=s.skills?.[skill],level=record?.level||1,maxLevel=E.MAX_LEVEL;
  const attempts=(record?.window||[]).filter(a=>a.level===level).slice(-10);
  const answered=attempts.length,correct=attempts.filter(a=>a.correct).length;
- const speeds=attempts.filter(a=>a.correct).map(a=>Number.isFinite(a.equivalentMs)?a.equivalentMs:a.ms);
+ const speeds=attempts.filter(a=>a.correct).map(speedValue);
  const speed=E.median(speeds),limit=E.LIMITS[skill];
  const more=Math.max(0,10-answered),missing=Math.max(0,9-correct);
  const speedReady=speed!==null&&speed<=limit;
+ const last=performanceTrends(s,skill).find(t=>t.category==='tradeoff'||t.category==='speed'||t.category==='precision');
  let status;
- if(level===maxLevel)status='Højeste nuværende niveau. Målet er større sikkerhed og flere tonearter.';
- else if(answered<10)status='Du mangler '+more+' '+(more===1?'svar':'svar')+' til den første fulde vurdering på dette niveau.';
- else if(correct<9)status='Du skal op på mindst 9 rigtige blandt de seneste 10 svar. Nye svar erstatter de ældste.';
- else if(!speedReady)status='Præcisionen er på plads. Nu skal du læse hurtigere uden at miste sikkerhed.';
- else status='Kravene er opfyldt. Niveauet justeres ved næste registrerede svar.';
+ if(level===maxLevel)status='Niveau '+maxLevel+' er det sidste trin i denne version. Udfordringen er nu længere passager og sikker læsning i nye tonearter.';
+ else if(answered<10)status='Niveau '+(level+1)+' kræver 10 aktuelle svar med mindst 9 rigtige. Du har '+answered+' svar og '+correct+' rigtige i dette vindue.'+(speed!==null?' Medianen er '+seconds(speed)+' sek. mod kravet '+seconds(limit)+' sek.':'');
+ else if(correct<9)status='Du har '+correct+' af 10 rigtige. Målet er mindst 9; nye svar erstatter de ældste i vinduet.'+(last?.category==='tradeoff'?' Din hastighed er steget, men antallet af fejl er også steget.':'');
+ else if(!speedReady)status='Du har '+correct+' af 10 rigtige. Medianen er '+seconds(speed)+' sek. mod kravet '+seconds(limit)+' sek. pr. afkodet enhed.'+(last?.category==='tradeoff'?' Pas på, at højere tempo ikke koster præcision.':'');
+ else status='Kravene for niveau '+(level+1)+' er opfyldt. Niveauet opdateres ved næste registrerede svar.';
  return {skill,level,maxLevel,answered,correct,more,missing,medianMs:speed,limitMs:limit,speedReady,status,complete:level===maxLevel,answerProgress:Math.round(answered*10)};
 }
 function keyCoverage(s){
@@ -191,5 +260,5 @@ function nextGuidance(s,entries=[],now=Date.now()){
 }
 
 E.question=question;E.group=group;E.record=record;E.passageQuestions=passageQuestions;E.validateScore=validateScore;
-return {DAY,INTERVAL_DAYS,parseLine,fromSpec,validateScore,concept,migrate,dueReviews,question,group,record,sequenceQuestion,melodyQuestion,chordQuestion,intervalQuality,tapQuestion,gradeTaps,tapTargets,pulseInfo,timeline,addPractice,nextPiece,localDay,route,markRoute,nextGuidance,readiness,keyCoverage};
+return {DAY,INTERVAL_DAYS,parseLine,fromSpec,validateScore,concept,migrate,dueReviews,question,group,record,sequenceQuestion,melodyQuestion,chordQuestion,intervalQuality,tapQuestion,gradeTaps,tapTargets,pulseInfo,timeline,addPractice,nextPiece,localDay,route,markRoute,nextGuidance,readiness,keyCoverage,performanceTrends,taskKind};
 });
