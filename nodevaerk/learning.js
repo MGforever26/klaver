@@ -43,14 +43,14 @@ function sequenceQuestion(score,clef,skill,level,measureIndices=null){
   detail:'Tilføj tonerne i rækkefølge. Spring pauser og toner, der er bundet fra den foregående tone, over. Akkorder læses nedefra.',
   answer:JSON.stringify(tokens),answerLabel:labels.join(' · '),explanation:labels.join(' · ')+'. Læs trin, spring og gentagelser fra venstre mod højre. En bindebue forlænger tonen uden nyt anslag.'});
 }
-function melodyQuestion(level,r,skill='passage',clef=null){clef=clef||pick(['treble','bass'],r);const score=C.buildScore(level,r,clef,level>=3?2:1,true);return sequenceQuestion(score,clef,skill,level);}
-function chordQuestion(level,r){
- const clef=pick(['treble','bass'],r),key=pick(level===1?['C']:level===2?['C','G','F']:['C','G','D','F','Bb','Am','Dm'],r);
- const roots={C:['C','F','G'],G:['G','C','D'],D:['D','G','A'],F:['F','B','C'],Bb:['B','E','F'],Am:['A','D','E'],Dm:['D','G','A']};
- const letter=pick(roots[key],r),octave=clef==='bass'?2:4,root=E.diatonic(E.parse(letter+octave));
+function melodyQuestion(level,r,skill='passage',clef=null,tonality=null){clef=clef||pick(['treble','bass'],r);const score=C.buildScore(level,r,clef,level>=3?2:1,true,tonality);return sequenceQuestion(score,clef,skill,level);}
+function chordQuestion(level,r,requestedTonality=null){
+ const clef=pick(['treble','bass'],r),t=C.selectTonality(level,r,requestedTonality),key=t.key,rootIndex=E.LETTERS.indexOf(t.tonic);
+ const letter=pick([0,3,4],r);
+ const rootLetter=E.LETTERS[(rootIndex+letter)%7],octave=clef==='bass'?2:4,root=E.diatonic(E.parse(rootLetter+octave));
  let pts=(level===1?[0,pick([2,4],r)]:level===4&&r()<.5?[0,2,4,6]:[0,2,4]).map(i=>E.fromDiatonic(root+i));
  const inversion=level>=3?Math.floor(r()*3):0;for(let i=0;i<inversion;i++){const first=pts.shift();pts.push({...first,octave:first.octave+1});}
- const n={...pts[0],duration:'w',chord:pts.slice(1)},score={key,time:'4/4',measures:[{treble:clef==='treble'?[n]:[E.rest('w')],bass:clef==='bass'?[n]:[E.rest('w')]}]};
+ const n={...pts[0],duration:'w',chord:pts.slice(1)},score={key,tonality:t.id,time:'4/4',measures:[{treble:clef==='treble'?[n]:[E.rest('w')],bass:clef==='bass'?[n]:[E.rest('w')]}]};
  const q=sequenceQuestion(score,clef,'interval',level);q.kind='chord';q.prompt='Hvilke toner står i grebet?';q.detail='Læs alle tonerne nedefra og op. Tilføj én tone ad gangen.';q.target={measure:0,clef,index:0};q.explanation=q.answerLabel+'. Tonerne spilles samtidig. Se afstanden mellem dem som et samlet greb.';return identify(q);
 }
 function intervalQuality(level,r){
@@ -74,15 +74,15 @@ function rhythmAdvanced(level,r){const q=tapQuestion(level,r);q.type='choice';q.
  const correct=label(hit.at),values=Array.from({length:at*4},(_,i)=>label(i/4));q.options=shuffle([correct,...shuffle([...new Set(values)].filter(x=>x!==correct),r).slice(0,3)],r).map(v=>({value:v,label:v}));q.answer=correct;q.answerLabel=correct;q.units=hit.index+1;
  q.prompt=compound?'På hvilken ottendedelsplads begynder den grønne tone?':'Hvornår begynder den grønne tone?';q.detail=compound?'En halv plads er en sekstendedel. Tæl også pauser og bundne toner.':'Sekstendedele tælles 1-e-og-a, 2-e-og-a. Bindebuer giver ingen nye anslag.';q.explanation='Den grønne tone begynder på '+correct+'. Læg varigheden af alle forudgående toner og pauser sammen.';return identify(q);
 }
-function question(skill,level,r){
- if(skill==='chords')return chordQuestion(level,r);
+function question(skill,level,r,requestedTonality=null){
+ if(skill==='chords')return chordQuestion(level,r,requestedTonality);
  if(skill==='tap')return tapQuestion(level,r);
- if(skill==='passage')return r()<.25?C.together(level,r):melodyQuestion(level,r);
- if((skill==='treble'||skill==='bass')&&level>=2&&r()<.45)return melodyQuestion(level,r,skill,skill);
- if(skill==='interval'&&level===4)return r()<.35?chordQuestion(level,r):intervalQuality(level,r);
- if(skill==='interval'&&level>=2&&r()<.25)return chordQuestion(level,r);
+ if(skill==='passage')return r()<.25?C.together(level,r,requestedTonality):melodyQuestion(level,r,'passage',null,requestedTonality);
+ if((skill==='treble'||skill==='bass')&&level>=2&&r()<.45)return melodyQuestion(level,r,skill,skill,requestedTonality);
+ if(skill==='interval'&&level===4)return r()<.35?chordQuestion(level,r,requestedTonality):intervalQuality(level,r);
+ if(skill==='interval'&&level>=2&&r()<.25)return chordQuestion(level,r,requestedTonality);
  if(skill==='rhythm'&&level===4)return rhythmAdvanced(level,r);
- return previousQuestion(skill,level,r);
+ return previousQuestion(skill,level,r,requestedTonality);
 }
 function acceptsFocus(q,focus){return focus==='mixed'||focus==='review'||(focus==='chords'?q.kind==='chord':focus==='tap'?q.kind==='tap':q.skill===focus);}
 function dueReviews(s,focus='mixed',now=Date.now()){migrate(s,now);return Object.values(s.learning.reviews).filter(x=>x.dueAt<=now&&(x.dueGroup||0)<=s.groups&&acceptsFocus(x.q,focus)).sort((a,b)=>a.dueAt-b.dueAt||a.lastAt-b.lastAt);}
@@ -90,12 +90,12 @@ function group(s,focus='mixed',seed=Date.now(),now=Date.now()){
  migrate(s,now);const r=E.rng(seed),out=[],due=dueReviews(s,focus,now);
  for(const entry of due.slice(0,focus==='review'?5:1)){
   let q=entry.q;
-  if(!q.pieceId&&!entry.failed){for(let i=0;i<12;i++){const variant=question(q.kind==='chord'?'chords':q.kind==='tap'?'tap':q.skill,q.level,r);if(variant.kind===q.kind&&variant.score.key===q.score.key&&variant.score.time===q.score.time&&(q.type!=='pitch'||concept(variant)===entry.key)){q=variant;break;}}}
+  if(!q.pieceId&&!entry.failed){for(let i=0;i<12;i++){const variant=question(q.kind==='chord'?'chords':q.kind==='tap'?'tap':q.skill,q.level,r);if(variant.kind===q.kind&&variant.score.key===q.score.key&&(variant.score.tonality||variant.score.key)===(q.score.tonality||q.score.key)&&variant.score.time===q.score.time&&(q.type!=='pitch'||concept(variant)===entry.key)){q=variant;break;}}}
   out.push({...q,review:true,reviewKey:entry.key});
  }
  const domain=focus==='chords'?'interval':focus==='tap'?'rhythm':focus;
  const skills=focus==='mixed'||focus==='review'?shuffle(['treble','bass','rhythm','passage',s.groups%2?'interval':'accidental'],r):Array(5).fill(domain);
- for(const skill of skills){if(out.length>=5)break;let q;for(let i=0;i<25;i++){q=question(['chords','tap'].includes(focus)?focus:skill,s.skills[skill].level,r);if(!out.some(x=>x.id===q.id))break;}out.push(q);}
+ for(const skill of skills){if(out.length>=5)break;let q;for(let i=0;i<25;i++){q=question(['chords','tap'].includes(focus)?focus:skill,s.skills[skill].level,r,C.tonalityFor(s.skills[skill].level,s.groups*5+out.length));if(!out.some(x=>x.id===q.id))break;}out.push(q);}
  return out;
 }
 function record(s,q,answer,ms,now=Date.now()){
@@ -134,6 +134,62 @@ function addPractice(s,entry,now=Date.now()){
  migrate(s,now);const run={...entry,at:now,id:'play:'+now+':'+s.learning.practice.length};s.learning.practice.push(run);return run;
 }
 function nextPiece(s,pieces=E.PIECES){migrate(s);const level=Math.max(1,Math.min(s.skills.treble.level,s.skills.bass.level));const practiced=new Set(s.learning.practice.map(x=>x.pieceId));return pieces.find(p=>p.level<=level&&!practiced.has(p.id))||pieces.find(p=>p.level<=Math.min(4,level+1)&&!practiced.has(p.id))||pieces[0];}
+/* Progress is calculated from the same rolling ten answers as the
+ * actual promotion rule in engine.record; no new level or stale estimate. */
+function readiness(s,skill){
+ const record=s.skills?.[skill],level=record?.level||1,maxLevel=4;
+ const attempts=(record?.window||[]).filter(a=>a.level===level).slice(-10);
+ const answered=attempts.length,correct=attempts.filter(a=>a.correct).length;
+ const speeds=attempts.filter(a=>a.correct).map(a=>Number.isFinite(a.equivalentMs)?a.equivalentMs:a.ms);
+ const speed=E.median(speeds),limit=E.LIMITS[skill];
+ const more=Math.max(0,10-answered),missing=Math.max(0,9-correct);
+ const speedReady=speed!==null&&speed<=limit;
+ let status;
+ if(level===maxLevel)status='Højeste nuværende niveau. Målet er større sikkerhed og flere tonearter.';
+ else if(answered<10)status='Du mangler '+more+' '+(more===1?'svar':'svar')+' til den første fulde vurdering på dette niveau.';
+ else if(correct<9)status='Du skal op på mindst 9 rigtige blandt de seneste 10 svar. Nye svar erstatter de ældste.';
+ else if(!speedReady)status='Præcisionen er på plads. Nu skal du læse hurtigere uden at miste sikkerhed.';
+ else status='Kravene er opfyldt. Niveauet justeres ved næste registrerede svar.';
+ return {skill,level,maxLevel,answered,correct,more,missing,medianMs:speed,limitMs:limit,speedReady,status,complete:level===maxLevel,answerProgress:Math.round(answered*10)};
+}
+function keyCoverage(s){
+ const ids=new Set(C.TONALITIES.map(t=>t.id)),seen=new Set();
+ for(const a of s.attempts||[])if(a.tonality&&ids.has(a.tonality))seen.add(a.tonality);
+ return {total:C.TONALITIES.length,seen:[...seen],count:seen.size,remaining:C.TONALITIES.filter(t=>!seen.has(t.id)).map(t=>t.id)};
+}
+/* Lightweight day path. Stored as an additive v3 learning field:
+ * existing scores, sessions, reviews and the v1 localStorage key are intact. */
+function localDay(now=Date.now()){return new Date(now).toLocaleDateString('sv-SE',{timeZone:'Europe/Copenhagen'});}
+function route(s,now=Date.now()){
+ migrate(s,now);const day=localDay(now),r=s.learning.route;
+ if(!r||r.day!==day){s.learning.route={day,foundation:false,bars:false,repertoire:false};}
+ return s.learning.route;
+}
+function markRoute(s,kind,now=Date.now()){
+ const r=route(s,now);
+ if(kind==='group')r.foundation=true;
+ if(kind==='bars')r.bars=true;
+ if(kind==='repertoire')r.repertoire=true;
+ return {...r};
+}
+function nextGuidance(s,entries=[],now=Date.now()){
+ const r=route(s,now),errors=entries.filter(e=>!e.result?.correct),next=nextPiece(s);
+ const status={foundation:r.foundation,bars:r.bars,repertoire:r.repertoire};
+ if(errors.length>=2){
+  return {kind:'focus',focus:'review',title:'Giv de svære steder en ny chance',why:'Du havde '+errors.length+' fejl i gruppen. En kort repetitionsgruppe vender tilbage til de usikre punkter, før du går videre.',button:'Træn mine fejl',status};
+ }
+ if(!r.foundation){
+  return {kind:'focus',focus:'mixed',title:'Begynd med et bredt overblik',why:'Fem blandede spørgsmål afslører, hvor du er sikker, og hvor du har brug for lidt mere.',button:'Læs fem blandede opgaver',status};
+ }
+ if(!r.bars){
+  return {kind:'focus',focus:'passage',title:'Læs hele takter i nye tonearter',why:errors.length?'En taktøvelse giver dig mulighed for at bruge nodelæsningen i sammenhæng.': 'Nu kan du bruge nodegenkendelsen til hele takter. Tonearterne skifter, så du lærer at læse efter de faste fortegn.',button:'Gå til taktlæsning',status};
+ }
+ if(!r.repertoire){
+  return {kind:'studio',pieceId:next.id,title:'Brug det i musik: '+next.title,why:'Du har trænet både enkeltopgaver og takter. Prøv nu fire takter fra bladet ved klaveret. Vælg et roligt tempo.',button:'Åbn klaverstykket',status};
+ }
+ return {kind:'focus',focus:'mixed',title:'Dagens øvesti er gennemført',why:'Du har arbejdet med grundlaget, hele takter og musik. Vil du fortsætte, får du nye opgaver i flere tonearter.',button:'Fortsæt med nye tonearter',status};
+}
+
 E.question=question;E.group=group;E.record=record;E.passageQuestions=passageQuestions;E.validateScore=validateScore;
-return {DAY,INTERVAL_DAYS,parseLine,fromSpec,validateScore,concept,migrate,dueReviews,question,group,record,sequenceQuestion,melodyQuestion,chordQuestion,intervalQuality,tapQuestion,gradeTaps,tapTargets,pulseInfo,timeline,addPractice,nextPiece};
+return {DAY,INTERVAL_DAYS,parseLine,fromSpec,validateScore,concept,migrate,dueReviews,question,group,record,sequenceQuestion,melodyQuestion,chordQuestion,intervalQuality,tapQuestion,gradeTaps,tapTargets,pulseInfo,timeline,addPractice,nextPiece,localDay,route,markRoute,nextGuidance,readiness,keyCoverage};
 });

@@ -9,7 +9,21 @@
 const oldQuestion=E.question;
 E.SKILLS.passage='Takter og samspil';
 const DOMAINS=['treble','bass','accidental','rhythm','interval','passage'];
-const SIGS={C:'C-dur',G:'G-dur',F:'F-dur',D:'D-dur'};
+/* Ordered by circle of fifths; each minor prints its relative major signature. */
+const KEY_PAIRS=[
+ ['C','Am','C','A'],['G','Em','G','E'],['F','Dm','F','D'],['D','Bm','D','B'],
+ ['Bb','Gm','B','G'],['A','F#m','A','F'],['Eb','Cm','E','C'],['E','C#m','E','C'],
+ ['Ab','Fm','A','F'],['B','G#m','B','G'],['Db','Bbm','D','B'],['F#','D#m','F','D']
+];
+const TONALITIES=KEY_PAIRS.flatMap(([major,minor,majorTonic,minorTonic],idx)=>[
+ {id:major,key:major,tonic:majorTonic,mode:'major',difficulty:idx},
+ {id:minor,key:major,tonic:minorTonic,mode:'minor',difficulty:idx}
+]);
+const TONALITY_MAP=Object.fromEntries(TONALITIES.map(t=>[t.id,t]));
+function tonePool(level){return TONALITIES.filter(t=>level>=3||t.difficulty<=(level===1?2:6));}
+function tonalityFor(level,serial){const pool=tonePool(level);return pool[((serial%pool.length)+pool.length)%pool.length];}
+function selectTonality(level,r,requested=null){if(!requested)return pick(tonePool(level),r);const t=TONALITY_MAP[typeof requested==='string'?requested:requested.id];if(!t)throw Error('Ukendt toneart: '+requested);return t;}
+
 const METERS=['2/4','3/4','4/4','6/8','12/8'];
 const PATTERNS={
  '2/4':[[['q','q']],[['q','8','8'],['8','8','q']],[['8','8','8','8'],['qd','8'],['q','8','8']]],
@@ -27,25 +41,27 @@ function beats(pattern){return pattern.reduce((sum,s)=>sum+E.beats(parseDuration
 function meterBeats(meter){const [n,d]=meter.split('/').map(Number);return 4*n/d;}
 function meterFor(level,r){return pick(level===1?['3/4','4/4']:level===2?['2/4','3/4','4/4','6/8','12/8']:METERS,r);}
 function patternFor(meter,level,r){const tier=level<=1?0:level===2?1:2;const pattern=pick(PATTERNS[meter][tier],r);if(Math.abs(beats(pattern)-meterBeats(meter))>1e-9)throw Error('Forkert taktlængde: '+meter+' '+pattern.join(' '));return pattern;}
-function noteWalk(clef,count,level,r){
+function noteWalk(clef,count,level,r,tonality=null){
  const ranges=clef==='treble'?[[30,36],[28,38],[27,40],[26,42]]:[[19,25],[18,28],[17,30],[16,32]];
- const [low,high]=ranges[level-1],base=low+Math.floor(r()*(high-low+1));let step=base;
+ const [low,high]=ranges[level-1];let base=low+Math.floor(r()*(high-low+1));
+ if(tonality&&r()<.65){const tonic=E.LETTERS.indexOf(tonality.tonic);const options=Array.from({length:high-low+1},(_,j)=>j+low).filter(i=>((i%7)+7)%7===tonic);if(options.length)base=pick(options,r);}
+ let step=base;
  return Array.from({length:count},(_,i)=>{if(i){const interval=pick(level===1?[-2,-1,0,1,2]:[-3,-2,-1,0,1,2,3],r);step=Math.min(high,Math.max(low,step+interval));}return E.fromDiatonic(step);});
 }
-function makeLine(pattern,clef,level,r){const pts=noteWalk(clef,pattern.length,level,r);return pattern.map((d,i)=>{const spec=parseDuration(d);const n={...pts[i],...spec};if(level>=3&&i>0&&i<pattern.length-1&&r()<.12)return {...E.rest(spec.duration),dots:spec.dots};return n;});}
-function accompaniment(meter,clef,level,r){
+function makeLine(pattern,clef,level,r,tonality=null){const pts=noteWalk(clef,pattern.length,level,r,tonality);return pattern.map((d,i)=>{const spec=parseDuration(d);const n={...pts[i],...spec};if(level>=3&&i>0&&i<pattern.length-1&&r()<.12)return {...E.rest(spec.duration),dots:spec.dots};return n;});}
+function accompaniment(meter,clef,level,r,tonality=null){
  const pat=meter==='12/8'?['qd','qd','qd','qd']:meter==='6/8'?['qd','qd']:meter==='3/4'?['hd']:meter==='2/4'?['h']:['h','h'];
- return makeLine(pat,clef,Math.min(2,level),r);
+ return makeLine(pat,clef,Math.min(2,level),r,tonality);
 }
-function buildScore(level,r,activeClef='treble',count=1,otherHand=true){
- const meter=meterFor(level,r),key=pick(level===1?['C']:level===2?['C','G','F']:['C','G','F','D'],r);
+function buildScore(level,r,activeClef='treble',count=1,otherHand=true,requestedTonality=null){
+ const meter=meterFor(level,r),tonality=selectTonality(level,r,requestedTonality),key=tonality.key;
  const measures=[];
  for(let j=0;j<count;j++){
-  const m={treble:[],bass:[]};m[activeClef]=makeLine(patternFor(meter,level,r),activeClef,level,r);
-  if(otherHand)m[activeClef==='treble'?'bass':'treble']=accompaniment(meter,activeClef==='treble'?'bass':'treble',level,r);
+  const m={treble:[],bass:[]};m[activeClef]=makeLine(patternFor(meter,level,r),activeClef,level,r,tonality);
+  if(otherHand)m[activeClef==='treble'?'bass':'treble']=accompaniment(meter,activeClef==='treble'?'bass':'treble',level,r,tonality);
   measures.push(m);
  }
- const score={key,time:meter,measures};const errors=E.validateScore(score);
+ const score={key,tonality:tonality.id,time:meter,measures};const errors=E.validateScore(score);
  if(errors.length)throw Error('Ugyldigt partitur: '+errors.join('; '));
  return score;
 }
@@ -63,9 +79,9 @@ function alternativeNames(score,m,clef,r){
  if(notes.length>=2){const swapped=base.slice();[swapped[0],swapped[1]]=[swapped[1],swapped[0]];candidates.push(swapped.join(' · '));}
  return shuffle([...new Set(candidates)],r);
 }
-function barNotes(level,r,skill='passage',clefOverride=null){
+function barNotes(level,r,skill='passage',clefOverride=null,tonality=null){
  const clef=clefOverride||pick(['treble','bass'],r),count=level>=3?2:1;
- const score=buildScore(level,r,clef,count,true),targetMeasure=count-1;
+ const score=buildScore(level,r,clef,count,true,tonality),targetMeasure=count-1;
  const correct=noteNames(score,targetMeasure,clef).join(' · ');
  const alternatives=alternativeNames(score,targetMeasure,clef,r);
  const c=choices(correct,alternatives,r);
@@ -73,13 +89,13 @@ function barNotes(level,r,skill='passage',clefOverride=null){
   prompt:'Hvilken tonerække står i '+(clef==='treble'?'højre':'venstre')+' hånd i takt '+(targetMeasure+1)+'?',
   detail:'Læs hele takten fra venstre mod højre. Medtag kun toner, der anslås. Læg mærke til tonearten og eventuelle pauser.',
   answer:c.answer,answerLabel:correct,options:c.options,
-  explanation:'Takt '+(targetMeasure+1)+' i '+SIGS[score.key]+': '+correct+'. Find først starttonen og følg trin, spring og gentagelser.'};
+  explanation:'Takt '+(targetMeasure+1)+' i '+E.KEY_NAMES[score.tonality||score.key]+': '+correct+'. Find først starttonen og følg trin, spring og gentagelser.'};
  return keyed(q);
 }
 function noteOnsets(notes){let t=0;return notes.map((n,i)=>{const o={index:i,at:t,n};t+=E.beats(n);return o;}).filter(x=>!x.n.rest);}
 function momentLabel(at,meter){if(meter==='6/8'||meter==='12/8')return String(Math.round(at*2)+1);const whole=Math.floor(at)+1;return whole+(Math.abs(at%1-.5)<.001?'-og':Math.abs(at%1-.25)<.001?'-e':Math.abs(at%1-.75)<.001?'-a':'');}
-function rhythmBar(level,r){
- const score=buildScore(level,r,'treble',level>=3?2:1,true),targetMeasure=score.measures.length-1;
+function rhythmBar(level,r,tonality=null){
+ const score=buildScore(level,r,'treble',level>=3?2:1,true,tonality),targetMeasure=score.measures.length-1;
  const hits=noteOnsets(score.measures[targetMeasure].treble);
  const selected=pick(hits.length>1?hits.slice(1):hits,r);const correct=momentLabel(selected.at,score.time);
  const allMoments=Array.from({length:Math.round(meterBeats(score.time)*2)},(_,i)=>i/2);
@@ -92,11 +108,11 @@ function rhythmBar(level,r){
   explanation:'Takt '+(targetMeasure+1)+' er i '+score.time+'. Den grønne tone starter på '+correct+(score.time==='12/8'?' (hovedslag '+(Math.floor((Number(correct)-1)/3)+1)+' af fire)':'')+'. Tæl alle tidligere nodeværdier og pauser med.'};
  return keyed(q);
 }
-function together(level,r){
- const meter=level<=1?'4/4':meterFor(level,r);const key=level>=3?pick(['C','G','F','D'],r):'C';
+function together(level,r,requestedTonality=null){
+ const meter=level<=1?'4/4':meterFor(level,r);const tonality=selectTonality(level,r,requestedTonality),key=tonality.key;
  const treblePattern=meter==='12/8'?['q','8','q','8','q','8','q','8']:meter==='6/8'?['8','8','8','8','8','8']:meter==='3/4'?['q','q','q']:meter==='2/4'?['8','8','q']:['q','q','q','q'];
  const bassAlternatives=meter==='12/8'?[['qd','qd','qd','qd'],['q','8','qd','qd','qd'],['qd','q','8','qd','qd']]:meter==='6/8'?[['qd','qd'],['q','8','qd'],['qd','q','8']]:meter==='3/4'?[['q','h'],['h','q'],['q','q','q']]:meter==='2/4'?[['q','q'],['h']]:[['h','h'],['q','h','q'],['h','q','q']];
- const bassPattern=pick(bassAlternatives,r);const score={key,time:meter,measures:[{treble:makeLine(treblePattern,'treble',level,r),bass:makeLine(bassPattern,'bass',level,r)}]};
+ const bassPattern=pick(bassAlternatives,r);const score={key,tonality:tonality.id,time:meter,measures:[{treble:makeLine(treblePattern,'treble',level,r,tonality),bass:makeLine(bassPattern,'bass',level,r,tonality)}]};
  if(E.validateScore(score).length)throw Error('Ugyldig samspilstakt');
  const t=noteOnsets(score.measures[0].treble).map(x=>x.at),b=noteOnsets(score.measures[0].bass).map(x=>x.at);
  const hits=b.filter(x=>t.some(y=>Math.abs(x-y)<.0001));const correct=hits.map(v=>momentLabel(v,meter)).join(' og ');
@@ -110,12 +126,23 @@ function together(level,r){
   explanation:'Begge hænder anslår en ny tone på '+correct+'. Følg de to stemmer efter slagene, ikke efter nodehovederne alene.'};
  return keyed(q);
 }
-function question(skill,level,r){
+function rekeyQuestion(q,tonality){
+ const t=typeof tonality==='string'?TONALITY_MAP[tonality]:tonality;
+ if(!t)return q;
+ q.score.key=t.key;q.score.tonality=t.id;
+ if(q.type==='pitch'){
+  const n=E.targetNote(q);q.answer=n.id;q.answerLabel=n.name;
+  q.explanation=(n.clef==='bass'?'F':'G')+'-nøgle: '+n.name+n.octave+'. '+q.detail;
+ }
+ delete q.id;return keyed(q);
+}
+function question(skill,level,r,requestedTonality=null){
  if(!DOMAINS.includes(skill)||level<1||level>4)throw Error('Ukendt færdighed eller niveau');
- if(skill==='passage')return r()<.35?together(level,r):barNotes(level,r);
- if(skill==='rhythm')return rhythmBar(level,r);
- if((skill==='treble'||skill==='bass')&&level>=2&&r()<.48)return barNotes(level,r,skill,skill);
- return oldQuestion(skill,level,r);
+ const tonality=selectTonality(level,r,requestedTonality);
+ if(skill==='passage')return r()<.35?together(level,r,tonality):barNotes(level,r,'passage',null,tonality);
+ if(skill==='rhythm')return rhythmBar(level,r,tonality);
+ if((skill==='treble'||skill==='bass')&&level>=2&&r()<.48)return barNotes(level,r,skill,skill,tonality);
+ return rekeyQuestion(oldQuestion(skill,level,r),tonality);
 }
 function group(state,focus='mixed',seed=Date.now()){
  const r=E.rng(seed),out=[];
@@ -123,7 +150,7 @@ function group(state,focus='mixed',seed=Date.now()){
  if(due.length)out.push({...pick(due,r).q,review:true});
  let skills=focus==='mixed'?['treble','bass','rhythm','passage',state.groups%2===0?'accidental':'interval']:Array(5).fill(focus);
  skills=shuffle(skills,r);
- for(const skill of skills){if(out.length>=5)break;let q;for(let i=0;i<30;i++){q=question(skill,state.skills[skill].level,r);if(!out.some(x=>x.id===q.id))break;}out.push(q);}
+ for(const skill of skills){if(out.length>=5)break;let q;for(let i=0;i<30;i++){q=question(skill,state.skills[skill].level,r,tonalityFor(state.skills[skill].level,state.groups*5+out.length));if(!out.some(x=>x.id===q.id))break;}out.push(q);}
  return out;
 }
 function assessment(state,seed=Date.now()){
@@ -131,10 +158,11 @@ function assessment(state,seed=Date.now()){
  for(let round=0;round<3;round++){
   for(const skill of shuffle(DOMAINS,r)){
    const level=rounds[round];let q;
-   if(skill==='passage')q=round===1?together(level,r):barNotes(level,r);
-   else if(skill==='treble'||skill==='bass')q=round===0?oldQuestion(skill,level,r):barNotes(level,r,skill,skill);
-   else if(skill==='rhythm')q=rhythmBar(level,r);
-   else q=oldQuestion(skill,level,r);
+   const t=tonalityFor(level,round*6+items.length);
+   if(skill==='passage')q=round===1?together(level,r,t):barNotes(level,r,'passage',null,t);
+   else if(skill==='treble'||skill==='bass')q=round===0?rekeyQuestion(oldQuestion(skill,level,r),t):barNotes(level,r,skill,skill,t);
+   else if(skill==='rhythm')q=rhythmBar(level,r,t);
+   else q=rekeyQuestion(oldQuestion(skill,level,r),t);
    q.diagnostic=true;items.push(q);
   }
  }
@@ -156,7 +184,7 @@ function applyAssessment(state,session,now=Date.now()){
  state.assessment={at:now,results};session.placed=true;
  return state.assessment;
 }
-const coach={DOMAINS,METERS,PATTERNS,patternFor,meterFor,buildScore,barNotes,rhythmBar,together,question,group,assessment,applyAssessment,momentLabel,noteOnsets};
+const coach={DOMAINS,METERS,PATTERNS,TONALITIES,tonePool,tonalityFor,selectTonality,rekeyQuestion,patternFor,meterFor,buildScore,barNotes,rhythmBar,together,question,group,assessment,applyAssessment,momentLabel,noteOnsets};
 E.question=question;E.group=group;
 return coach;
 });
