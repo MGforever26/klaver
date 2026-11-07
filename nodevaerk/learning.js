@@ -144,7 +144,7 @@ function studioPlaybackPlan(score,hand,tempo,start,end){
  const info=pulseInfo(score.time),period=60/tempo,secondsPerQuarter=period/info.pulse;
  const sequence=timeline(score,hand,start,end);
  return {
-  barSeconds:info.pulses*period,
+  barSeconds:info.beats*secondsPerQuarter,
   totalSeconds:sequence.duration*secondsPerQuarter,
   events:sequence.events.map(e=>({...e,startSeconds:e.at*secondsPerQuarter,durationSeconds:e.duration*secondsPerQuarter}))
  };
@@ -166,7 +166,7 @@ function nextPiece(s,pieces=E.PIECES){migrate(s);
  const candidates=pieces.filter(p=>!practiced.has(p.id));
  candidates.sort((a,b)=>{
   const cost=p=>Math.abs(p.level-level)+(p.level>level?.5:0);
-  return cost(a)-cost(b)||b.level-a.level;
+  return cost(a)-cost(b)||Number(b.collection==='klassisk')-Number(a.collection==='klassisk')||b.level-a.level;
  });
  return candidates[0]||pieces.find(p=>p.level===level)||pieces[0];
 }
