@@ -134,6 +134,39 @@ function addPractice(s,entry,now=Date.now()){
  migrate(s,now);const run={...entry,at:now,id:'play:'+now+':'+s.learning.practice.length};s.learning.practice.push(run);return run;
 }
 function nextPiece(s,pieces=E.PIECES){migrate(s);const level=Math.max(1,Math.min(s.skills.treble.level,s.skills.bass.level));const practiced=new Set(s.learning.practice.map(x=>x.pieceId));return pieces.find(p=>p.level<=level&&!practiced.has(p.id))||pieces.find(p=>p.level<=Math.min(4,level+1)&&!practiced.has(p.id))||pieces[0];}
+/* Lightweight day path. Stored as an additive v3 learning field:
+ * existing scores, sessions, reviews and the v1 localStorage key are intact. */
+function localDay(now=Date.now()){return new Date(now).toLocaleDateString('sv-SE',{timeZone:'Europe/Copenhagen'});}
+function route(s,now=Date.now()){
+ migrate(s,now);const day=localDay(now),r=s.learning.route;
+ if(!r||r.day!==day){s.learning.route={day,foundation:false,bars:false,repertoire:false};}
+ return s.learning.route;
+}
+function markRoute(s,kind,now=Date.now()){
+ const r=route(s,now);
+ if(kind==='group')r.foundation=true;
+ if(kind==='bars')r.bars=true;
+ if(kind==='repertoire')r.repertoire=true;
+ return {...r};
+}
+function nextGuidance(s,entries=[],now=Date.now()){
+ const r=route(s,now),errors=entries.filter(e=>!e.result?.correct),next=nextPiece(s);
+ const status={foundation:r.foundation,bars:r.bars,repertoire:r.repertoire};
+ if(errors.length>=2){
+  return {kind:'focus',focus:'review',title:'Giv de svære steder en ny chance',why:'Du havde '+errors.length+' fejl i gruppen. En kort repetitionsgruppe vender tilbage til de usikre punkter, før du går videre.',button:'Træn mine fejl',status};
+ }
+ if(!r.foundation){
+  return {kind:'focus',focus:'mixed',title:'Begynd med et bredt overblik',why:'Fem blandede spørgsmål afslører, hvor du er sikker, og hvor du har brug for lidt mere.',button:'Læs fem blandede opgaver',status};
+ }
+ if(!r.bars){
+  return {kind:'focus',focus:'passage',title:'Læs hele takter i nye tonearter',why:errors.length?'En taktøvelse giver dig mulighed for at bruge nodelæsningen i sammenhæng.': 'Nu kan du bruge nodegenkendelsen til hele takter. Tonearterne skifter, så du lærer at læse efter de faste fortegn.',button:'Gå til taktlæsning',status};
+ }
+ if(!r.repertoire){
+  return {kind:'studio',pieceId:next.id,title:'Brug det i musik: '+next.title,why:'Du har trænet både enkeltopgaver og takter. Prøv nu fire takter fra bladet ved klaveret. Vælg et roligt tempo.',button:'Åbn klaverstykket',status};
+ }
+ return {kind:'focus',focus:'mixed',title:'Dagens øvesti er gennemført',why:'Du har arbejdet med grundlaget, hele takter og musik. Vil du fortsætte, får du nye opgaver i flere tonearter.',button:'Fortsæt med nye tonearter',status};
+}
+
 E.question=question;E.group=group;E.record=record;E.passageQuestions=passageQuestions;E.validateScore=validateScore;
-return {DAY,INTERVAL_DAYS,parseLine,fromSpec,validateScore,concept,migrate,dueReviews,question,group,record,sequenceQuestion,melodyQuestion,chordQuestion,intervalQuality,tapQuestion,gradeTaps,tapTargets,pulseInfo,timeline,addPractice,nextPiece};
+return {DAY,INTERVAL_DAYS,parseLine,fromSpec,validateScore,concept,migrate,dueReviews,question,group,record,sequenceQuestion,melodyQuestion,chordQuestion,intervalQuality,tapQuestion,gradeTaps,tapTargets,pulseInfo,timeline,addPractice,nextPiece,localDay,route,markRoute,nextGuidance};
 });
