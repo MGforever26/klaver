@@ -591,6 +591,7 @@ specs.push(...[
     "tip": "Melodien begynder efter en kort optakt. De mange korte toner bliver lettere, når du genkender bevægelsen omkring C og E.",
     "workId": "mozart-turkish",
     "workName": "Turkish March",
+    "collection": "klassisk",
     "composer": "W. A. Mozart",
     "source": {
       "url": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=108",
@@ -627,6 +628,7 @@ specs.push(...[
     "tip": "Højre hånd skifter nu fra enkelttoner til dobbeltgreb. Fokusér på Fis–A og E–G i den ene hånd.",
     "workId": "mozart-turkish",
     "workName": "Turkish March",
+    "collection": "klassisk",
     "composer": "W. A. Mozart",
     "source": {
       "url": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=108",
