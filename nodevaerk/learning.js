@@ -144,7 +144,7 @@ function studioPlaybackPlan(score,hand,tempo,start,end){
  const info=pulseInfo(score.time),period=60/tempo,secondsPerQuarter=period/info.pulse;
  const sequence=timeline(score,hand,start,end);
  return {
-  barSeconds:info.pulses*period,
+  barSeconds:info.beats*secondsPerQuarter,
   totalSeconds:sequence.duration*secondsPerQuarter,
   events:sequence.events.map(e=>({...e,startSeconds:e.at*secondsPerQuarter,durationSeconds:e.duration*secondsPerQuarter}))
  };
