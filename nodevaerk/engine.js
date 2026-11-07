@@ -7,6 +7,24 @@ const KEYS={C:{},G:{F:1},D:{F:1,C:1},F:{B:-1},Bb:{B:-1,E:-1},Eb:{B:-1,E:-1,A:-1}
 Object.assign(KEYS,{A:{F:1,C:1,G:1},E:{F:1,C:1,G:1,D:1},Ab:{B:-1,E:-1,A:-1,D:-1},Db:{B:-1,E:-1,A:-1,D:-1,G:-1},Am:{},Dm:{B:-1},Em:{F:1},Gm:{B:-1,E:-1}});
 const KEY_NAMES={C:'C-dur',G:'G-dur',D:'D-dur',F:'F-dur',Bb:'B-dur',Eb:'Es-dur'};
 Object.assign(KEY_NAMES,{A:'A-dur',E:'E-dur',Ab:'As-dur',Db:'Des-dur',Am:'A-mol',Dm:'D-mol',Em:'E-mol',Gm:'G-mol'});
+/* Twelve distinct major signatures and their relative natural minors.
+ * Keys retain the original names and semantics for saved v1-v3 sessions.
+ * For newly generated minor examples the renderer receives the equivalent
+ * major signature, while score.tonality carries the minor centre. */
+const SIGNATURE_COUNTS={
+ C:0,G:1,D:2,A:3,E:4,B:5,'F#':6,Db:-5,Ab:-4,Eb:-3,Bb:-2,F:-1,
+ Am:0,Em:1,Bm:2,'F#m':3,'C#m':4,'G#m':5,'D#m':6,Bbm:-5,Fm:-4,Cm:-3,Gm:-2,Dm:-1
+};
+const SHARP_ORDER=['F','C','G','D','A','E','B'];
+const FLAT_ORDER=['B','E','A','D','G','C','F'];
+for(const [name,count] of Object.entries(SIGNATURE_COUNTS)){
+ const order=count>=0?SHARP_ORDER:FLAT_ORDER;
+ KEYS[name]=Object.fromEntries(order.slice(0,Math.abs(count)).map(letter=>[letter,count>=0?1:-1]));
+}
+Object.assign(KEY_NAMES,{
+ B:'H-dur','F#':'Fis-dur',Bm:'H-mol','F#m':'Fis-mol','C#m':'Cis-mol',
+ 'G#m':'Gis-mol','D#m':'Dis-mol',Bbm:'Bes-mol',Fm:'F-mol',Cm:'C-mol'
+});
 const SKILLS={treble:'G-nøgle',bass:'F-nøgle',accidental:'Fortegn',rhythm:'Rytme',interval:'Intervaller',passage:'Samlet læsning'};
 const DUR={w:4,h:2,q:1,'8':.5,'16':.25};
 const DURATION_NAMES={w:'Helnode',h:'Halvnode',q:'Fjerdedel','8':'Ottendedel','16':'Sekstendedel'};
