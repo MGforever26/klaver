@@ -155,10 +155,11 @@ document.addEventListener('click',function(ev){
  else if(a==='fluency-pause'){closeFluency();setup();}
  else if(a==='fluency-exit'){closeFluency();home();}
  else if(a==='fluency-again'){const f=ensure();start(f.count);}
- else if(a==='fluency-zoom'){const s=currentSession(),p=pitch(s.ids[s.index]);openZoom({key:'C',time:null,measures:[{treble:p.clef==='treble'?[p.note]:[],bass:p.clef==='bass'?[p.note]:[]}]},{measure:0,clef:p.clef,index:0});}
+ else if(a==='fluency-zoom'){stopTimer();const s=currentSession(),p=pitch(s.ids[s.index]);openZoom({key:'C',time:null,measures:[{treble:p.clef==='treble'?[p.note]:[],bass:p.clef==='bass'?[p.note]:[]}]},{measure:0,clef:p.clef,index:0});}
 });
 document.addEventListener('visibilitychange',()=>{if(page==='fluency-exercise'&&currentSession()?.phase==='question'){if(document.hidden)stopTimer();else if(!clockStart)clockStart=performance.now();}});
 window.addEventListener('pagehide',()=>{if(page==='fluency-exercise')stopTimer();});
+document.getElementById('modal').addEventListener('close',()=>{if(page==='fluency-exercise'&&currentSession()?.phase==='question'&&!document.hidden&&!clockStart)clockStart=performance.now();});
 window.addEventListener('storage',()=>{if(page==='fluency-exercise')draw();else if(page==='fluency-summary')results();else if(page==='fluency-setup')setup();});
 home();
 })(window);
