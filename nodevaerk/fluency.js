@@ -83,7 +83,7 @@ progress=function(){
  APP.querySelector('main').appendChild(card);
 };
 const previousHelp=help;
-help=function(){closeFluency();save();previousHelp();const el=APP.querySelector('.help-content');if(el)el.insertAdjacentHTML('afterbegin','<h2>Hurtig nodegenkendelse</h2><p>Under »Hvad vil du øve?« kan du vælge Enkeltnoder: 10, 20, 30 eller 50 naturlige toner i G- og F-nøgle, blandet. Alle linjer og mellemrum samt én ekstra position og én hjælpelinje over og under hvert system indgår. Svar med ét tryk. Svartiden måles til første svar, og svære positioner får lidt flere gentagelser. Resultaterne er helt adskilt fra øvegrupper og niveauer.</p>');};
+help=function(){closeFluency();save();previousHelp();const el=APP.querySelector('.help-content');if(el)el.insertAdjacentHTML('afterbegin','<h2>Hurtig nodegenkendelse</h2><p>Under »Hvad vil du øve?« kan du vælge Enkeltnoder: 10, 20, 30 eller 50 naturlige toner i G- og F-nøgle, blandet. Alle linjer og mellemrum samt én ekstra position og én hjælpelinje over og under hvert system indgår. Svar med ét tryk. Svartiden måles til første svar, og svære positioner får lidt flere gentagelser. Resultaterne er helt adskilt fra øvegrupper og niveauer.</p>');const footer=Array.from(el?.querySelectorAll('p')||[]).find(p=>p.textContent.includes('Nodeværk · Version 5.0'));if(footer)footer.textContent=footer.textContent.replace('Version 5.0','Version 5.2');};
 function setup(){
  closeFluency();page='fluency-setup';const f=ensure();chosenCount=f.count;
  const s=f.active,canResume=s&&s.phase!=='summary'&&s.index<s.ids.length;
