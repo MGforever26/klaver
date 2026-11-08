@@ -24,9 +24,10 @@ function plan(data,count,r=Math.random){
  const deck=Array.isArray(data.deck)?data.deck.filter(id=>IDS.includes(id)):[];
  const history=Array.isArray(data.attempts)?data.attempts:[];
  const primary=count>=IDS.length?IDS.length:Math.ceil(count*.8);
+ const fullDeck=count>=IDS.length?shuffled(IDS,r):null;
  const result=[];
  for(let i=0;i<primary;i++){
-  if(count>=IDS.length){result.push(shuffled(IDS,r)[i]);continue;}
+  if(count>=IDS.length){result.push(fullDeck[i]);continue;}
   if(!deck.length)deck.push(...shuffled(IDS,r));
   result.push(deck.shift());
  }
@@ -75,7 +76,7 @@ progress=function(){
  const card=document.createElement('section');card.className='card fluency-stat-card';
  const runs=f.runs.slice(-7).reverse();
  card.innerHTML='<div class="eyebrow">Separat hastighedstræning</div><h2>Enkeltnoder</h2><p class="subtle">G- og F-nøgle blandet. Tæller ikke med i dine øvrige svar, niveauer eller øvegrupper.</p>'+
- '<div class="fluency-metrics"><div><strong>'+all.total+'</strong><span>Besvarede noder</span></div><div><strong>'+(all.accuracy===null?'…':all.accuracy+'%')+'</strong><span>Korrekte i alt</span></div><div><strong>'+formatMs(last.medianMs)+'</strong><span>Sidste 30 korrekte</span></div></div>'+
+ '<div class="fluency-metrics"><div><strong>'+all.total+'</strong><span>Besvarede noder</span></div><div><strong>'+(all.accuracy===null?'…':all.accuracy+'%')+'</strong><span>Korrekte i alt</span></div><div><strong>'+formatMs(last.medianMs)+'</strong><span>Median, sidste 30 svar</span></div></div>'+
  (prev.medianMs!==null&&last.medianMs!==null?'<p class="subtle">Forrige 30 svar: '+formatMs(prev.medianMs)+' i median for korrekte svar. Sammenlign altid også træfsikkerheden.</p>':'<p class="subtle">Efter flere sessioner kan du sammenligne dine svartider over tid.</p>')+
  (runs.length?'<h3>Seneste sessioner</h3><div class="fluency-history">'+runs.map(x=>'<div><span>'+new Date(x.at).toLocaleDateString('da-DK',{day:'numeric',month:'short'})+' · '+x.count+' toner</span><strong>'+formatMs(x.medianMs)+'</strong><span>'+x.correct+'/'+x.count+' rigtige</span></div>').join('')+'</div>':'')+
  '<button class="secondary" data-action="fluency-open">Øv enkeltnoder</button>';
