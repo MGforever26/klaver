@@ -55,8 +55,8 @@ function ensure(){
  if(!COUNTS.includes(f.count))f.count=30;
  return f;
 }
-function stopTimer(){if(clockStart){clockElapsed+=Math.max(0,performance.now()-clockStart);clockStart=0;}return Math.min(180000,Math.max(0,Math.round(clockElapsed)));}
-function beginTimer(){clockElapsed=0;clockStart=document.hidden?0:performance.now();}
+function stopTimer(){if(clockStart){clockElapsed+=Math.max(0,performance.now()-clockStart);clockStart=0;}const s=currentSession();if(s&&s.phase==='question')s.elapsedMs=clockElapsed;return Math.min(180000,Math.max(0,Math.round(clockElapsed)));}
+function beginTimer(){clockElapsed=Math.max(0,Number(currentSession()?.elapsedMs)||0);clockStart=document.hidden?0:performance.now();}
 function clearNext(){if(pending!==null){clearTimeout(pending);pending=null;}}
 function closeFluency(){clearNext();stopTimer();}
 function formatMs(ms){return ms===null?'…':(ms/1000).toFixed(2).replace('.',',')+' s';}
@@ -83,7 +83,7 @@ progress=function(){
  APP.querySelector('main').appendChild(card);
 };
 const previousHelp=help;
-help=function(){previousHelp();const el=APP.querySelector('.help-content');if(el)el.insertAdjacentHTML('afterbegin','<h2>Hurtig nodegenkendelse</h2><p>Under »Hvad vil du øve?« kan du vælge Enkeltnoder: 10, 20, 30 eller 50 naturlige toner i G- og F-nøgle, blandet. Alle linjer og mellemrum samt én ekstra position og én hjælpelinje over og under hvert system indgår. Svar med ét tryk. Svartiden måles til første svar, og svære positioner får lidt flere gentagelser. Resultaterne er helt adskilt fra øvegrupper og niveauer.</p>');};
+help=function(){closeFluency();save();previousHelp();const el=APP.querySelector('.help-content');if(el)el.insertAdjacentHTML('afterbegin','<h2>Hurtig nodegenkendelse</h2><p>Under »Hvad vil du øve?« kan du vælge Enkeltnoder: 10, 20, 30 eller 50 naturlige toner i G- og F-nøgle, blandet. Alle linjer og mellemrum samt én ekstra position og én hjælpelinje over og under hvert system indgår. Svar med ét tryk. Svartiden måles til første svar, og svære positioner får lidt flere gentagelser. Resultaterne er helt adskilt fra øvegrupper og niveauer.</p>');};
 function setup(){
  closeFluency();page='fluency-setup';const f=ensure();chosenCount=f.count;
  const s=f.active,canResume=s&&s.phase!=='summary'&&s.index<s.ids.length;
@@ -94,7 +94,7 @@ function setup(){
  '<p class="storage-note">Denne træning har sin egen statistik. Den ændrer ikke din samlede progression.</p>',false);
 }
 function start(count){
- closeFluency();const f=ensure();f.count=count;f.active={ids:plan(f,count),index:0,results:[],phase:'question',startedAt:Date.now()};
+ closeFluency();const f=ensure();f.count=count;f.active={ids:plan(f,count),index:0,results:[],phase:'question',startedAt:Date.now(),elapsedMs:0};
  save();draw(true);
 }
 function draw(scroll=false){
@@ -131,7 +131,7 @@ function advance(){
   ensure().runs.push({at:Date.now(),count:s.ids.length,...report});
   if(ensure().runs.length>250)ensure().runs.shift();
   save();results();
- }else{s.phase='question';save();draw(true);}
+ }else{s.phase='question';s.elapsedMs=0;save();draw(true);}
 }
 function results(){
  closeFluency();page='fluency-summary';const s=currentSession();if(!s)return setup();const report=stats(s.results);
@@ -152,13 +152,13 @@ document.addEventListener('click',function(ev){
  else if(a==='fluency-resume')draw(true);
  else if(a==='fluency-answer')answer(b.dataset.value);
  else if(a==='fluency-next')advance();
- else if(a==='fluency-pause'){closeFluency();setup();}
- else if(a==='fluency-exit'){closeFluency();home();}
+ else if(a==='fluency-pause'){closeFluency();save();setup();}
+ else if(a==='fluency-exit'){closeFluency();save();home();}
  else if(a==='fluency-again'){const f=ensure();start(f.count);}
- else if(a==='fluency-zoom'){stopTimer();const s=currentSession(),p=pitch(s.ids[s.index]);openZoom({key:'C',time:null,measures:[{treble:p.clef==='treble'?[p.note]:[],bass:p.clef==='bass'?[p.note]:[]}]},{measure:0,clef:p.clef,index:0});}
+ else if(a==='fluency-zoom'){stopTimer();save();const s=currentSession(),p=pitch(s.ids[s.index]);openZoom({key:'C',time:null,measures:[{treble:p.clef==='treble'?[p.note]:[],bass:p.clef==='bass'?[p.note]:[]}]},{measure:0,clef:p.clef,index:0});}
 });
-document.addEventListener('visibilitychange',()=>{if(page==='fluency-exercise'&&currentSession()?.phase==='question'){if(document.hidden)stopTimer();else if(!clockStart)clockStart=performance.now();}});
-window.addEventListener('pagehide',()=>{if(page==='fluency-exercise')stopTimer();});
+document.addEventListener('visibilitychange',()=>{if(page==='fluency-exercise'&&currentSession()?.phase==='question'){if(document.hidden){stopTimer();save();}else if(!clockStart)clockStart=performance.now();}});
+window.addEventListener('pagehide',()=>{if(page==='fluency-exercise'){stopTimer();save();}});
 document.getElementById('modal').addEventListener('close',()=>{if(page==='fluency-exercise'&&currentSession()?.phase==='question'&&!document.hidden&&!clockStart)clockStart=performance.now();});
 window.addEventListener('storage',()=>{if(page==='fluency-exercise')draw();else if(page==='fluency-summary')results();else if(page==='fluency-setup')setup();});
 home();
